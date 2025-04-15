@@ -149,4 +149,19 @@ router.get("/:id", authMiddleware, getClientById);
  */
 router.delete("/:id", authMiddleware, deleteClient);
 
+/**
+ * @openapi
+ * /api/client/archived:
+ *   get:
+ *     tags:
+ *       - Clientes
+ *     summary: Listar clientes archivados
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de clientes archivados
+ */
+router.get("/archived", authMiddleware, getArchivedClients);
+
 module.exports = router;

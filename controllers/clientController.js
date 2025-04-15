@@ -156,10 +156,28 @@ const deleteClient = async (req, res) => {
   }
 };
 
+const getArchivedClients = async (req, res) => {
+  try {
+    const user = req.user;
+
+    const query = {
+      $or: [{ createdBy: user._id }, { companyId: user.companyData?.cif }],
+    };
+
+    const clients = await Client.findDeleted(query).sort({ deletedAt: -1 });
+
+    res.json({ archived: clients });
+  } catch (error) {
+    console.error("❌ Error al obtener archivados:", error);
+    res.status(500).json({ message: "Error al obtener clientes archivados" });
+  }
+};
+
 module.exports = {
   createClient,
   updateClient,
   getClients,
   getClientById,
   deleteClient,
+  getArchivedClients,
 };

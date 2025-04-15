@@ -150,3 +150,7 @@ Authorization: Bearer [[TOKEN]]
 ### Eliminar cliente permanentemente (hard delete)
 DELETE http://localhost:3000/api/client/:id?soft=false
 Authorization: Bearer [[TOKEN]]
+
+### Obtener lista de clientes archivados (soft deleted)
+GET http://localhost:3000/api/client/archived
+Authorization: Bearer [[TOKEN]]
