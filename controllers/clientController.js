@@ -18,11 +18,9 @@ const createClient = async (req, res) => {
     });
 
     if (existing) {
-      return res
-        .status(409)
-        .json({
-          message: "Este cliente ya está registrado por ti o tu compañía",
-        });
+      return res.status(409).json({
+        message: "Este cliente ya está registrado por ti o tu compañía",
+      });
     }
 
     const newClient = new Client({
@@ -47,6 +45,39 @@ const createClient = async (req, res) => {
   }
 };
 
+const updateClient = async (req, res) => {
+  try {
+    const clientId = req.params.id;
+    const user = req.user;
+    const updateData = req.body;
+
+    const client = await Client.findById(clientId);
+
+    if (!client) {
+      return res.status(404).json({ message: "Cliente no encontrado" });
+    }
+
+    // Permitir solo si es el creador o pertenece a la misma compañía
+    if (
+      !client.createdBy.equals(user._id) &&
+      client.companyId !== user.companyData?.cif
+    ) {
+      return res.status(403).json({
+        message: "No tienes permisos para modificar este cliente",
+      });
+    }
+
+    Object.assign(client, updateData);
+    await client.save();
+
+    res.json({ message: "Cliente actualizado correctamente", client });
+  } catch (error) {
+    console.error("❌ Error actualizando cliente:", error);
+    res.status(500).json({ message: "Error al actualizar cliente" });
+  }
+};
+
 module.exports = {
   createClient,
+  updateClient,
 };

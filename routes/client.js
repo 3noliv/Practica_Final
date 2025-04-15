@@ -44,4 +44,42 @@ const authMiddleware = require("../middlewares/authMiddleware");
  */
 router.post("/", authMiddleware, validateCreateClient, createClient);
 
+/**
+ * @openapi
+ * /api/client/{id}:
+ *   put:
+ *     tags:
+ *       - Clientes
+ *     summary: Editar un cliente
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               cif:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *               contactEmail:
+ *                 type: string
+ *               contactPhone:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Cliente actualizado correctamente
+ */
+router.put("/:id", authMiddleware, validateCreateClient, updateClient);
+
 module.exports = router;

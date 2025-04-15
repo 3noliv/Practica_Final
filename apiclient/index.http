@@ -108,3 +108,29 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZmVjNGIwN
 {
   "email": "nuevo.invitado@live.u-tad.com"
 }
+
+### Crear nuevo cliente (requiere token de usuario verificado)
+POST http://localhost:3000/api/client
+Content-Type: application/json
+Authorization: Bearer [[TOKEN]]
+
+{
+  "name": "Cliente Ejemplo S.L.",
+  "cif": "B12345678",
+  "address": "Calle Real 42",
+  "contactEmail": "contacto@cliente.com",
+  "contactPhone": "+34 600 123 456"
+}
+
+### Editar cliente existente
+PUT http://localhost:3000/api/client/(clientId)
+Content-Type: application/json
+Authorization: Bearer [[TOKEN]]
+
+{
+  "name": "Cliente Actualizado S.A.",
+  "cif": "B87654321",
+  "address": "Nueva Dirección 789",
+  "contactEmail": "nuevoemail@cliente.com",
+  "contactPhone": "+34 655 000 111"
+}
