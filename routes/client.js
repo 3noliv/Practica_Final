@@ -97,4 +97,29 @@ router.put("/:id", authMiddleware, validateCreateClient, updateClient);
  */
 router.get("/", authMiddleware, getClients);
 
+/**
+ * @openapi
+ * /api/client/{id}:
+ *   get:
+ *     tags:
+ *       - Clientes
+ *     summary: Obtener un cliente específico por ID
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Cliente encontrado
+ *       403:
+ *         description: Sin permisos
+ *       404:
+ *         description: No encontrado
+ */
+router.get("/:id", authMiddleware, getClientById);
+
 module.exports = router;

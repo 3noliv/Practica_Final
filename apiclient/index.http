@@ -123,7 +123,7 @@ Authorization: Bearer [[TOKEN]]
 }
 
 ### Editar cliente existente
-PUT http://localhost:3000/api/client/(clientId)
+PUT http://localhost:3000/api/client/:id
 Content-Type: application/json
 Authorization: Bearer [[TOKEN]]
 
@@ -137,4 +137,8 @@ Authorization: Bearer [[TOKEN]]
 
 ### Obtener todos los clientes del usuario o de su compañía
 GET http://localhost:3000/api/client
+Authorization: Bearer [[TOKEN]]
+
+### Obtener cliente específico por ID
+GET http://localhost:3000/api/client/:id
 Authorization: Bearer [[TOKEN]]

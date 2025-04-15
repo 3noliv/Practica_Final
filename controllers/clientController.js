@@ -94,8 +94,37 @@ const getClients = async (req, res) => {
   }
 };
 
+const getClientById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = req.user;
+
+    const client = await Client.findById(id);
+
+    if (!client) {
+      return res.status(404).json({ message: "Cliente no encontrado" });
+    }
+
+    // Permitir solo si es el creador o pertenece a la misma compañía
+    if (
+      !client.createdBy.equals(user._id) &&
+      client.companyId !== user.companyData?.cif
+    ) {
+      return res
+        .status(403)
+        .json({ message: "No tienes permisos para ver este cliente" });
+    }
+
+    res.json({ client });
+  } catch (error) {
+    console.error("❌ Error al obtener cliente:", error);
+    res.status(500).json({ message: "Error al obtener cliente" });
+  }
+};
+
 module.exports = {
   createClient,
   updateClient,
   getClients,
+  getClientById,
 };
