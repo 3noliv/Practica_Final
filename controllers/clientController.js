@@ -77,7 +77,25 @@ const updateClient = async (req, res) => {
   }
 };
 
+const getClients = async (req, res) => {
+  try {
+    const user = req.user;
+
+    const query = {
+      $or: [{ createdBy: user._id }, { companyId: user.companyData?.cif }],
+    };
+
+    const clients = await Client.find(query).sort({ createdAt: -1 });
+
+    res.json({ clients });
+  } catch (error) {
+    console.error("❌ Error al obtener clientes:", error);
+    res.status(500).json({ message: "Error al obtener clientes" });
+  }
+};
+
 module.exports = {
   createClient,
   updateClient,
+  getClients,
 };

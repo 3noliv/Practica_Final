@@ -134,3 +134,7 @@ Authorization: Bearer [[TOKEN]]
   "contactEmail": "nuevoemail@cliente.com",
   "contactPhone": "+34 655 000 111"
 }
+
+### Obtener todos los clientes del usuario o de su compañía
+GET http://localhost:3000/api/client
+Authorization: Bearer [[TOKEN]]

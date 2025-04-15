@@ -82,4 +82,19 @@ router.post("/", authMiddleware, validateCreateClient, createClient);
  */
 router.put("/:id", authMiddleware, validateCreateClient, updateClient);
 
+/**
+ * @openapi
+ * /api/client:
+ *   get:
+ *     tags:
+ *       - Clientes
+ *     summary: Listar clientes propios o de la compañía
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de clientes
+ */
+router.get("/", authMiddleware, getClients);
+
 module.exports = router;
