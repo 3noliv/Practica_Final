@@ -122,9 +122,44 @@ const getClientById = async (req, res) => {
   }
 };
 
+const deleteClient = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const soft = req.query.soft !== "false";
+    const user = req.user;
+
+    const client = await Client.findById(id);
+
+    if (!client) {
+      return res.status(404).json({ message: "Cliente no encontrado" });
+    }
+
+    if (
+      !client.createdBy.equals(user._id) &&
+      client.companyId !== user.companyData?.cif
+    ) {
+      return res
+        .status(403)
+        .json({ message: "No tienes permisos para eliminar este cliente" });
+    }
+
+    if (soft) {
+      await client.delete(); // Soft delete (archivado)
+      return res.json({ message: "Cliente archivado correctamente" });
+    } else {
+      await client.deleteOne(); // Hard delete
+      return res.json({ message: "Cliente eliminado permanentemente" });
+    }
+  } catch (error) {
+    console.error("❌ Error al eliminar cliente:", error);
+    res.status(500).json({ message: "Error al eliminar cliente" });
+  }
+};
+
 module.exports = {
   createClient,
   updateClient,
   getClients,
   getClientById,
+  deleteClient,
 };

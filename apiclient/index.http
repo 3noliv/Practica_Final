@@ -142,3 +142,11 @@ Authorization: Bearer [[TOKEN]]
 ### Obtener cliente específico por ID
 GET http://localhost:3000/api/client/:id
 Authorization: Bearer [[TOKEN]]
+
+### Archivar cliente (soft delete por defecto)
+DELETE http://localhost:3000/api/client/:id
+Authorization: Bearer [[TOKEN]]
+
+### Eliminar cliente permanentemente (hard delete)
+DELETE http://localhost:3000/api/client/:id?soft=false
+Authorization: Bearer [[TOKEN]]

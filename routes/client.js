@@ -122,4 +122,31 @@ router.get("/", authMiddleware, getClients);
  */
 router.get("/:id", authMiddleware, getClientById);
 
+/**
+ * @openapi
+ * /api/client/{id}:
+ *   delete:
+ *     tags:
+ *       - Clientes
+ *     summary: Eliminar o archivar un cliente
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: soft
+ *         in: query
+ *         required: false
+ *         schema:
+ *           type: boolean
+ *         description: Si es false, se elimina definitivamente
+ *     responses:
+ *       200:
+ *         description: Cliente eliminado o archivado correctamente
+ */
+router.delete("/:id", authMiddleware, deleteClient);
+
 module.exports = router;
