@@ -164,4 +164,25 @@ router.delete("/:id", authMiddleware, deleteClient);
  */
 router.get("/archived", authMiddleware, getArchivedClients);
 
+/**
+ * @openapi
+ * /api/client/restore/{id}:
+ *   put:
+ *     tags:
+ *       - Clientes
+ *     summary: Restaurar un cliente archivado
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Cliente restaurado
+ */
+router.put("/restore/:id", authMiddleware, restoreClient);
+
 module.exports = router;

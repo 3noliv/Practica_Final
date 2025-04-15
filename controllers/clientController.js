@@ -172,6 +172,36 @@ const getArchivedClients = async (req, res) => {
     res.status(500).json({ message: "Error al obtener clientes archivados" });
   }
 };
+const restoreClient = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = req.user;
+
+    const client = await Client.findOneDeleted({ _id: id });
+
+    if (!client) {
+      return res
+        .status(404)
+        .json({ message: "Cliente no encontrado o no archivado" });
+    }
+
+    if (
+      !client.createdBy.equals(user._id) &&
+      client.companyId !== user.companyData?.cif
+    ) {
+      return res
+        .status(403)
+        .json({ message: "No tienes permisos para restaurar este cliente" });
+    }
+
+    await Client.restore({ _id: id });
+
+    res.json({ message: "✅ Cliente restaurado correctamente" });
+  } catch (error) {
+    console.error("❌ Error al restaurar cliente:", error);
+    res.status(500).json({ message: "Error al restaurar cliente" });
+  }
+};
 
 module.exports = {
   createClient,
@@ -180,4 +210,5 @@ module.exports = {
   getClientById,
   deleteClient,
   getArchivedClients,
+  restoreClient,
 };
