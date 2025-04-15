@@ -97,6 +97,15 @@ const validatePasswordChange = [
   (req, res, next) => validateResults(req, res, next),
 ];
 
+const validateInvitation = [
+  check("email")
+    .exists()
+    .withMessage("El email es obligatorio")
+    .isEmail()
+    .withMessage("Debe ser un email válido"),
+  (req, res, next) => validateResults(req, res, next),
+];
+
 module.exports = {
   validateRegister,
   validateLogin,
@@ -104,4 +113,5 @@ module.exports = {
   validateOnboarding,
   validateCompany,
   validatePasswordChange,
+  validateInvitation,
 };

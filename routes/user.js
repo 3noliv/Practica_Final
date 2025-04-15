@@ -12,6 +12,7 @@ const {
   resetPassword,
   restoreUser,
   changePassword,
+  inviteUser,
 } = require("../controllers/userController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const uploadLogo = require("../middlewares/uploadLogo");
@@ -22,6 +23,7 @@ const {
   validateOnboarding,
   validateCompany,
   validatePasswordChange,
+  validateInvitation,
 } = require("../validators/userValidator");
 
 const router = express.Router();
@@ -320,5 +322,32 @@ router.patch(
   validatePasswordChange,
   changePassword
 );
+
+/**
+ * @openapi
+ * /api/user/invite:
+ *   post:
+ *     tags:
+ *       - Cuenta
+ *     summary: Invitar a un usuario como parte de tu compañía
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Invitación enviada
+ *       409:
+ *         description: El email ya está registrado
+ */
+router.post("/invite", authMiddleware, validateInvitation, inviteUser);
 
 module.exports = router;

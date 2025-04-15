@@ -394,6 +394,50 @@ const changePassword = async (req, res) => {
   }
 };
 
+const inviteUser = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Verificar que no exista ese email ya registrado
+    const existing = await User.findOne({ email });
+    if (existing) {
+      return res.status(409).json({ message: "Ese correo ya está registrado" });
+    }
+
+    const inviter = await User.findById(req.user.id);
+
+    if (!inviter || inviter.status !== "verified") {
+      return res.status(403).json({ message: "No autorizado para invitar" });
+    }
+
+    const verificationCode = generateCode();
+
+    const invitedUser = new User({
+      email,
+      role: "guest",
+      status: "pending",
+      verificationCode,
+      companyData: inviter.companyData, // hereda la compañía
+    });
+
+    await invitedUser.save();
+
+    await sendEmail({
+      to: email,
+      subject: "Invitación para unirse a la compañía",
+      text: `Has sido invitado a unirte. Usa este código de verificación: ${verificationCode}`,
+      from: process.env.EMAIL,
+    });
+
+    res.status(201).json({
+      message: `Invitación enviada a ${email}`,
+    });
+  } catch (error) {
+    console.error("❌ Error al invitar:", error);
+    res.status(500).json({ message: "Error al invitar usuario" });
+  }
+};
+
 module.exports = {
   registerUser,
   validateEmail,
@@ -407,4 +451,5 @@ module.exports = {
   recoverPassword,
   resetPassword,
   changePassword,
+  inviteUser,
 };

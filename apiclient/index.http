@@ -21,16 +21,16 @@ Content-Type: application/json
 ### 3. Validación del email (con token y código)
 PUT http://localhost:3000/api/user/validation
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZmViMjA3N2RmMjdiMDM0ODY3YmRmMyIsImlhdCI6MTc0NDc0NDk2NywiZXhwIjoxNzQ0NzQ4NTY3fQ.oIcoEl4-7WCVwgpOJoz5HJ44G3d4xOc6N4OqYDul2rI
+Authorization: Bearer [[TOKEN]]
 
 {
-  "code": "946081"
+  "code": "262683"
 }
 
 ### 4. Onboarding - Datos personales
 PUT http://localhost:3000/api/user/register
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZmViMjA3N2RmMjdiMDM0ODY3YmRmMyIsImlhdCI6MTc0NDc0NDk2NywiZXhwIjoxNzQ0NzQ4NTY3fQ.oIcoEl4-7WCVwgpOJoz5HJ44G3d4xOc6N4OqYDul2rI
+Authorization: Bearer [[TOKEN]]
 
 {
   "name": "Juan",
@@ -41,7 +41,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZmViMjA3N
 ### 5. Datos de la compañía
 PATCH http://localhost:3000/api/user/company
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZmViMjA3N2RmMjdiMDM0ODY3YmRmMyIsImlhdCI6MTc0NDc0NTA2NywiZXhwIjoxNzQ0NzQ4NjY3fQ.tUpli3NVuJaxge9_E4c3bJAW4G-BXnnHOtMcV2WFzLA
+Authorization: Bearer [[TOKEN]]
 
 {
   "name": "Empresa S.A.",
@@ -51,7 +51,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZmViMjA3N
 
 ### Subida de logo
 PATCH http://localhost:3000/api/user/logo
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZmViMjA3N2RmMjdiMDM0ODY3YmRmMyIsImlhdCI6MTc0NDc0NTA2NywiZXhwIjoxNzQ0NzQ4NjY3fQ.tUpli3NVuJaxge9_E4c3bJAW4G-BXnnHOtMcV2WFzLA
+Authorization: Bearer [[TOKEN]]
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
@@ -63,7 +63,7 @@ Content-Type: image/png
 
 ### Obtener datos del usuario autenticado
 GET http://localhost:3000/api/user/me
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZmViMjA3N2RmMjdiMDM0ODY3YmRmMyIsImlhdCI6MTc0NDc0NTA2NywiZXhwIjoxNzQ0NzQ4NjY3fQ.tUpli3NVuJaxge9_E4c3bJAW4G-BXnnHOtMcV2WFzLA
+Authorization: Bearer [[TOKEN]]
 
 ### Soft delete
 DELETE http://localhost:3000/api/user
@@ -78,7 +78,7 @@ POST http://localhost:3000/api/user/recover
 Content-Type: application/json
 
 {
-  "email": "ivan.martinez@live.u-tad.com"
+  "email": "test@example.com"
 }
 
 ### Resetear contraseña
@@ -86,16 +86,25 @@ PUT http://localhost:3000/api/user/reset-password
 Content-Type: application/json
 
 {
-  "token": "59cf5e71827019091373459825e8cc4fcf77a0a22ec87656629eb4c3797ce776",
+  "token": "EL_TOKEN_QUE_VES_EN_CONSOLA",
   "newPassword": "NuevaPass123"
 }
 
 ### Cambiar contraseña desde perfil (requiere login)
 PATCH http://localhost:3000/api/user/password
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZmViMjA3N2RmMjdiMDM0ODY3YmRmMyIsImlhdCI6MTc0NDc0NTA2NywiZXhwIjoxNzQ0NzQ4NjY3fQ.tUpli3NVuJaxge9_E4c3bJAW4G-BXnnHOtMcV2WFzLA
+Authorization: Bearer [[TOKEN]]
 
 {
   "currentPassword": "NuevaPass123",
   "newPassword": "NuevaPassword456"
+}
+
+### Invitar a usuario como guest (requiere token del invitador)
+POST http://localhost:3000/api/user/invite
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZmVjNGIwNjJmYjhjMmYzNDUyNWNjYiIsImlhdCI6MTc0NDc0OTc4OSwiZXhwIjoxNzQ0NzUzMzg5fQ.PGduHjiCpxU5fB3ueMIahhkRAVPsMJUc2cSVJtPC1d0
+
+{
+  "email": "nuevo.invitado@live.u-tad.com"
 }
