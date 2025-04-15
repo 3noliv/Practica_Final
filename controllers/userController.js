@@ -3,15 +3,14 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const generateCode = require("../utils/generateCode");
+const { sendEmail } = require("../utils/handleEmail");
 const { uploadToPinata } = require("../utils/handleUploadIPFS");
 
 // Registro de usuario
 const registerUser = async (req, res) => {
   try {
     console.log("🟢 Recibiendo datos:", req.body);
-
     const data = req.body;
-    console.log("🟢 Datos procesados:", data);
 
     if (!data.email || !data.password) {
       return res
@@ -35,7 +34,16 @@ const registerUser = async (req, res) => {
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
-    console.log("🟢 Token JWT generado");
+
+    // Enviar email con el código de verificación
+    await sendEmail({
+      to: newUser.email,
+      subject: "Verificación de cuenta",
+      text: `Tu código de verificación es: ${verificationCode}`,
+      from: process.env.EMAIL,
+    });
+
+    console.log("📧 Email de verificación enviado");
 
     res.status(201).json({
       user: {
@@ -47,9 +55,10 @@ const registerUser = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Error en el registro:", error);
-    res
-      .status(500)
-      .json({ message: "Error en el registro", error: error.message });
+    res.status(500).json({
+      message: "Error en el registro",
+      error: error.message,
+    });
   }
 };
 
@@ -280,11 +289,9 @@ const restoreUser = async (req, res) => {
     const restored = await User.restore({ _id: req.user.id });
 
     if (restored.nModified === 0) {
-      return res
-        .status(404)
-        .json({
-          message: "No se pudo restaurar el usuario (¿ya estaba activo?)",
-        });
+      return res.status(404).json({
+        message: "No se pudo restaurar el usuario (¿ya estaba activo?)",
+      });
     }
 
     res.json({ message: "✅ Usuario restaurado correctamente" });
@@ -315,8 +322,16 @@ const recoverPassword = async (req, res) => {
 
     console.log(`🔐 Token de recuperación para ${email}: ${resetToken}`);
 
+    await sendEmail({
+      to: user.email,
+      subject: "Recuperación de contraseña",
+      text: `Tu token de recuperación es: ${resetToken}`,
+      from: process.env.EMAIL,
+    });
+
     res.json({
-      message: "Token de recuperación generado (ver consola o base de datos)",
+      message:
+        "Token de recuperación generado y enviado por correo electrónico",
     });
   } catch (error) {
     console.error("❌ Error generando token de recuperación:", error);
@@ -352,6 +367,33 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res
+        .status(401)
+        .json({ message: "La contraseña actual no es correcta" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.json({ message: "✅ Contraseña actualizada correctamente" });
+  } catch (error) {
+    console.error("❌ Error cambiando la contraseña:", error);
+    res.status(500).json({ message: "Error al cambiar la contraseña" });
+  }
+};
+
 module.exports = {
   registerUser,
   validateEmail,
@@ -364,4 +406,5 @@ module.exports = {
   restoreUser,
   recoverPassword,
   resetPassword,
+  changePassword,
 };

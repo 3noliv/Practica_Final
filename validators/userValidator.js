@@ -85,10 +85,23 @@ const validateCompany = [
   (req, res, next) => validateResults(req, res, next),
 ];
 
+const validatePasswordChange = [
+  check("currentPassword")
+    .exists()
+    .withMessage("La contraseña actual es obligatoria"),
+  check("newPassword")
+    .exists()
+    .withMessage("La nueva contraseña es obligatoria")
+    .isLength({ min: 8 })
+    .withMessage("La nueva contraseña debe tener al menos 8 caracteres"),
+  (req, res, next) => validateResults(req, res, next),
+];
+
 module.exports = {
   validateRegister,
   validateLogin,
   validateCode,
   validateOnboarding,
   validateCompany,
+  validatePasswordChange,
 };

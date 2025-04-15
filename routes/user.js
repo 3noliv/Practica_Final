@@ -11,6 +11,7 @@ const {
   recoverPassword,
   resetPassword,
   restoreUser,
+  changePassword,
 } = require("../controllers/userController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const uploadLogo = require("../middlewares/uploadLogo");
@@ -20,6 +21,7 @@ const {
   validateCode,
   validateOnboarding,
   validateCompany,
+  validatePasswordChange,
 } = require("../validators/userValidator");
 
 const router = express.Router();
@@ -284,5 +286,39 @@ router.delete("/", authMiddleware, deleteUser);
  *         description: Usuario restaurado correctamente
  */
 router.put("/restore", authMiddleware, restoreUser);
+
+/**
+ * @openapi
+ * /api/user/password:
+ *   patch:
+ *     tags:
+ *       - Cuenta
+ *     summary: Cambiar la contraseña actual (usuario autenticado)
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [currentPassword, newPassword]
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Contraseña actualizada correctamente
+ *       401:
+ *         description: Contraseña actual incorrecta
+ */
+router.patch(
+  "/password",
+  authMiddleware,
+  validatePasswordChange,
+  changePassword
+);
 
 module.exports = router;
