@@ -127,9 +127,16 @@ const loginUser = async (req, res) => {
     console.log("🟢 Usuario encontrado:", user.email);
 
     if (user.status === "pending") {
-      return res
-        .status(403)
-        .json({ message: "Tu cuenta no está verificada. Revisa tu correo." });
+      // Permitimos login, pero advertimos que aún no está verificado
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+        expiresIn: "1h",
+      });
+
+      return res.status(200).json({
+        message: "Tu cuenta está pendiente de verificación",
+        user: { email: user.email, role: user.role, status: user.status },
+        token,
+      });
     }
 
     if (user.status === "disabled") {
@@ -412,12 +419,15 @@ const inviteUser = async (req, res) => {
 
     const verificationCode = generateCode();
 
+    const tempPassword = crypto.randomBytes(8).toString("hex");
+
     const invitedUser = new User({
       email,
+      password: tempPassword,
       role: "guest",
       status: "pending",
       verificationCode,
-      companyData: inviter.companyData, // hereda la compañía
+      companyData: inviter.companyData,
     });
 
     await invitedUser.save();
@@ -425,7 +435,21 @@ const inviteUser = async (req, res) => {
     await sendEmail({
       to: email,
       subject: "Invitación para unirse a la compañía",
-      text: `Has sido invitado a unirte. Usa este código de verificación: ${verificationCode}`,
+      text: `
+    ¡Hola!
+    
+    Has sido invitado a unirte a la compañía de ${inviter.email} como usuario guest.
+    
+    Aquí tienes tus credenciales temporales para acceder:
+    
+    📧 Email: ${email}
+    🔐 Contraseña temporal: ${tempPassword}
+    ✅ Código de verificación: ${verificationCode}
+    
+    👉 Por favor, accede a la plataforma, inicia sesión y valida tu cuenta con el código anterior.
+    
+    ¡Bienvenido!
+      `,
       from: process.env.EMAIL,
     });
 

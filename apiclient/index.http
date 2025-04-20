@@ -24,7 +24,7 @@ Content-Type: application/json
 Authorization: Bearer [[TOKEN]]
 
 {
-  "code": "262683"
+  "code": "829848"
 }
 
 ### 4. Onboarding - Datos personales
@@ -73,12 +73,17 @@ Authorization: Bearer [[TOKEN]]
 DELETE http://localhost:3000/api/user?soft=false
 Authorization: Bearer [[TOKEN]]
 
+### Restore de soft
+PUT http://localhost:3000/api/user/restore
+Content-Type: application/json
+Authorization: Bearer [[TOKEN]]
+
 ### Iniciar recuperación
 POST http://localhost:3000/api/user/recover
 Content-Type: application/json
 
 {
-  "email": "test@example.com"
+  "email": "ivan.martinez@live.u-tad.com"
 }
 
 ### Resetear contraseña
@@ -96,17 +101,26 @@ Content-Type: application/json
 Authorization: Bearer [[TOKEN]]
 
 {
-  "currentPassword": "NuevaPass123",
+  "currentPassword": "Password123",
   "newPassword": "NuevaPassword456"
 }
 
 ### Invitar a usuario como guest (requiere token del invitador)
 POST http://localhost:3000/api/user/invite
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZmVjNGIwNjJmYjhjMmYzNDUyNWNjYiIsImlhdCI6MTc0NDc0OTc4OSwiZXhwIjoxNzQ0NzUzMzg5fQ.PGduHjiCpxU5fB3ueMIahhkRAVPsMJUc2cSVJtPC1d0
+Authorization: Bearer [[TOKEN]]
 
 {
-  "email": "nuevo.invitado@live.u-tad.com"
+  "email": "enoliv02@gmail.com"
+}
+
+### Login de invitado (cuenta aún sin verificar)
+POST http://localhost:3000/api/user/login
+Content-Type: application/json
+
+{
+  "email": "invitado@correo.com",
+  "password": "contraseñaTemporal"
 }
 
 ### Crear nuevo cliente (requiere token de usuario verificado)

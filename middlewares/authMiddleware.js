@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/User"); // ajusta si usas index.js para modelos
 
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
   const token = req.header("Authorization");
 
   if (!token) {
@@ -11,12 +12,17 @@ const authMiddleware = (req, res, next) => {
   }
 
   try {
-    const tokenValue = token.replace("Bearer ", ""); // Elimina "Bearer " si está presente
-    const verified = jwt.verify(tokenValue, process.env.JWT_SECRET);
+    const tokenValue = token.replace("Bearer ", "");
+    const decoded = jwt.verify(tokenValue, process.env.JWT_SECRET);
 
-    console.log("🟢 Token decodificado:", verified);
+    console.log("🟢 Token decodificado:", decoded);
 
-    req.user = verified; // Asigna el usuario decodificado a la request
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(401).json({ message: "Usuario no encontrado" });
+    }
+
+    req.user = user; // ← ahora sí contiene status, role, etc.
     next();
   } catch (error) {
     console.error("🔴 Token inválido:", error);

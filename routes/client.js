@@ -1,7 +1,15 @@
 const express = require("express");
 const router = express.Router();
 
-const { createClient } = require("../controllers/clientController");
+const {
+  createClient,
+  updateClient,
+  getClients,
+  getClientById,
+  deleteClient,
+  getArchivedClients,
+  restoreClient,
+} = require("../controllers/clientController");
 const { validateCreateClient } = require("../validators/clientValidator");
 const authMiddleware = require("../middlewares/authMiddleware");
 
@@ -99,6 +107,21 @@ router.get("/", authMiddleware, getClients);
 
 /**
  * @openapi
+ * /api/client/archived:
+ *   get:
+ *     tags:
+ *       - Clientes
+ *     summary: Listar clientes archivados
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de clientes archivados
+ */
+router.get("/archived", authMiddleware, getArchivedClients);
+
+/**
+ * @openapi
  * /api/client/{id}:
  *   get:
  *     tags:
@@ -148,21 +171,6 @@ router.get("/:id", authMiddleware, getClientById);
  *         description: Cliente eliminado o archivado correctamente
  */
 router.delete("/:id", authMiddleware, deleteClient);
-
-/**
- * @openapi
- * /api/client/archived:
- *   get:
- *     tags:
- *       - Clientes
- *     summary: Listar clientes archivados
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Lista de clientes archivados
- */
-router.get("/archived", authMiddleware, getArchivedClients);
 
 /**
  * @openapi
