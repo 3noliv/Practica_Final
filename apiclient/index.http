@@ -172,3 +172,9 @@ Authorization: Bearer [[TOKEN]]
 ### Restaurar cliente archivado
 PUT http://localhost:3000/api/client/restore/:id
 Authorization: Bearer [[TOKEN]]
+
+###
+POST http://localhost:3000/api/client 400 25ms
+{
+  "name": ""
+}
