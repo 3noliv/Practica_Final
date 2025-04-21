@@ -5,6 +5,7 @@ const crypto = require("crypto");
 const generateCode = require("../utils/generateCode");
 const { sendEmail } = require("../utils/handleEmail");
 const { uploadToPinata } = require("../utils/handleUploadIPFS");
+const { handleHttpError } = require("../utils/handleError");
 
 // Registro de usuario
 const registerUser = async (req, res) => {
@@ -54,11 +55,7 @@ const registerUser = async (req, res) => {
       token,
     });
   } catch (error) {
-    console.error("❌ Error en el registro:", error);
-    res.status(500).json({
-      message: "Error en el registro",
-      error: error.message,
-    });
+    handleHttpError(res, error, "Error en el registro");
   }
 };
 
@@ -106,8 +103,7 @@ const validateEmail = async (req, res) => {
 
     res.json({ message: "Email validado correctamente" });
   } catch (error) {
-    console.error("❌ Error en la validación:", error);
-    res.status(500).json({ message: "Error en la validación" });
+    handleHttpError(res, error, "Error en la validación");
   }
 };
 
@@ -176,8 +172,7 @@ const loginUser = async (req, res) => {
     console.log("✅ Login exitoso, enviando token");
     res.json({ user: { email: user.email, role: user.role }, token });
   } catch (error) {
-    console.error("❌ Error en el login:", error);
-    res.status(500).json({ message: "Error en el login" });
+    handleHttpError(res, error, "Error en el login");
   }
 };
 
@@ -193,8 +188,7 @@ const getCurrentUser = async (req, res) => {
 
     res.json({ user });
   } catch (error) {
-    console.error("❌ Error al obtener el usuario:", error);
-    res.status(500).json({ message: "Error al obtener el usuario" });
+    handleHttpError(res, error, "Error al obtener el usuario");
   }
 };
 
@@ -211,10 +205,7 @@ const updateOnboarding = async (req, res) => {
 
     res.json({ message: "✅ Datos personales actualizados correctamente" });
   } catch (error) {
-    console.error("❌ Error en el onboarding:", error);
-    res
-      .status(500)
-      .json({ message: "Error al actualizar los datos personales" });
+    handleHttpError(res, error, "Error al actualizar los datos personales");
   }
 };
 
@@ -231,10 +222,7 @@ const updateCompany = async (req, res) => {
 
     res.json({ message: "✅ Datos de la compañía actualizados correctamente" });
   } catch (error) {
-    console.error("❌ Error actualizando los datos de la compañía:", error);
-    res
-      .status(500)
-      .json({ message: "Error al actualizar los datos de la compañía" });
+    handleHttpError(res, error, "Error al actualizar los datos de la compañía");
   }
 };
 
@@ -264,8 +252,7 @@ const updateLogo = async (req, res) => {
       logoUrl: ipfsUrl,
     });
   } catch (error) {
-    console.error("❌ Error al subir el logo a IPFS:", error);
-    res.status(500).json({ message: "Error al subir el logo a IPFS" });
+    handleHttpError(res, error, "Error al subir el logo a IPFS");
   }
 };
 
@@ -286,8 +273,7 @@ const deleteUser = async (req, res) => {
       return res.json({ message: "🗑️ Usuario eliminado permanentemente" });
     }
   } catch (error) {
-    console.error("❌ Error al eliminar usuario:", error);
-    res.status(500).json({ message: "Error al eliminar el usuario" });
+    handleHttpError(res, error, "Error al eliminar el usuario");
   }
 };
 
@@ -303,8 +289,7 @@ const restoreUser = async (req, res) => {
 
     res.json({ message: "✅ Usuario restaurado correctamente" });
   } catch (error) {
-    console.error("❌ Error al restaurar usuario:", error);
-    res.status(500).json({ message: "Error al restaurar el usuario" });
+    handleHttpError(res, error, "Error al restaurar el usuario");
   }
 };
 
@@ -341,10 +326,11 @@ const recoverPassword = async (req, res) => {
         "Token de recuperación generado y enviado por correo electrónico",
     });
   } catch (error) {
-    console.error("❌ Error generando token de recuperación:", error);
-    res
-      .status(500)
-      .json({ message: "Error al iniciar la recuperación de contraseña" });
+    handleHttpError(
+      res,
+      error,
+      "Error al iniciar la recuperación de contraseña"
+    );
   }
 };
 
@@ -369,8 +355,7 @@ const resetPassword = async (req, res) => {
 
     res.json({ message: "✅ Contraseña actualizada correctamente" });
   } catch (error) {
-    console.error("❌ Error al actualizar contraseña:", error);
-    res.status(500).json({ message: "Error al restablecer la contraseña" });
+    handleHttpError(res, error, "Error al restablecer la contraseña");
   }
 };
 
@@ -396,8 +381,7 @@ const changePassword = async (req, res) => {
 
     res.json({ message: "✅ Contraseña actualizada correctamente" });
   } catch (error) {
-    console.error("❌ Error cambiando la contraseña:", error);
-    res.status(500).json({ message: "Error al cambiar la contraseña" });
+    handleHttpError(res, error, "Error al cambiar la contraseña");
   }
 };
 
@@ -457,8 +441,7 @@ const inviteUser = async (req, res) => {
       message: `Invitación enviada a ${email}`,
     });
   } catch (error) {
-    console.error("❌ Error al invitar:", error);
-    res.status(500).json({ message: "Error al invitar usuario" });
+    handleHttpError(res, error, "Error al invitar usuario");
   }
 };
 
