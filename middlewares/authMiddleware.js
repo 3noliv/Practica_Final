@@ -1,32 +1,32 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/User"); // ajusta si usas index.js para modelos
+const User = require("../models/User");
+const { handleHttpError } = require("../utils/handleError");
 
 const authMiddleware = async (req, res, next) => {
   const token = req.header("Authorization");
-
   if (!token) {
-    console.log("🔴 No se proporcionó token");
-    return res
-      .status(401)
-      .json({ message: "Acceso denegado, token no proporcionado" });
+    return handleHttpError(res, "No hay token", 401);
   }
 
   try {
     const tokenValue = token.replace("Bearer ", "");
     const decoded = jwt.verify(tokenValue, process.env.JWT_SECRET);
 
-    console.log("🟢 Token decodificado:", decoded);
+    // Incluye usuarios soft-deleted
+    const user = await User.findOneWithDeleted({ _id: decoded.id });
 
-    const user = await User.findById(decoded.id);
     if (!user) {
-      return res.status(401).json({ message: "Usuario no encontrado" });
+      return handleHttpError(
+        res,
+        "Token inválido (usuario no encontrado)",
+        401
+      );
     }
 
-    req.user = user; // ← ahora sí contiene status, role, etc.
+    req.user = user;
     next();
   } catch (error) {
-    console.error("🔴 Token inválido:", error);
-    res.status(401).json({ message: "Token inválido o expirado" });
+    handleHttpError(res, error, "Token inválido o expirado", 401);
   }
 };
 

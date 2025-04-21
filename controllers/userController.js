@@ -279,13 +279,17 @@ const deleteUser = async (req, res) => {
 
 const restoreUser = async (req, res) => {
   try {
-    const restored = await User.restore({ _id: req.user.id });
+    const user = req.user;
 
-    if (restored.nModified === 0) {
-      return res.status(404).json({
-        message: "No se pudo restaurar el usuario (¿ya estaba activo?)",
-      });
+    if (!user.deleted) {
+      return handleHttpError(res, "El usuario no está archivado", 400);
     }
+
+    await User.restore({ _id: user._id });
+    await User.findByIdAndUpdate(user._id, {
+      loginAttempts: 3,
+      status: "verified",
+    });
 
     res.json({ message: "✅ Usuario restaurado correctamente" });
   } catch (error) {
