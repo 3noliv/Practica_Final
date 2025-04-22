@@ -1,0 +1,12 @@
+### Crear nuevo proyecto (requiere token y cliente existente)
+POST http://localhost:3000/api/project
+Content-Type: application/json
+Authorization: Bearer [[TOKEN]]
+
+{
+  "name": "Proyecto Web Corporativa",
+  "description": "Diseño y desarrollo del sitio web del cliente",
+  "client": "64f58dcd83f1e73e4bd91c10",  // ⚠️ Reemplaza con un ID real de cliente
+  "startDate": "2024-05-01",
+  "endDate": "2024-07-31"
+}
