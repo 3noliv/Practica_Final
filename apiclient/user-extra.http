@@ -1,0 +1,47 @@
+### 🧹 SOFT DELETE DE USUARIO
+DELETE http://localhost:3000/api/user
+Authorization: Bearer [[TOKEN]]
+
+### 🗑️ HARD DELETE DE USUARIO
+DELETE http://localhost:3000/api/user?soft=false
+Authorization: Bearer [[TOKEN]]
+
+### 🔄 RESTAURAR USUARIO DESHABILITADO (SOFT DELETE)
+PUT http://localhost:3000/api/user/restore
+Authorization: Bearer [[TOKEN]]
+
+### 🔐 INICIAR RECUPERACIÓN DE CONTRASEÑA
+POST http://localhost:3000/api/user/recover
+Content-Type: application/json
+
+{
+  "email": "tucorreo@ejemplo.com"
+}
+
+### 🔐 RESETEAR CONTRASEÑA (token recibido por correo)
+PUT http://localhost:3000/api/user/reset-password
+Content-Type: application/json
+
+{
+  "token": "TOKEN_RECUPERACION",
+  "newPassword": "NuevaPassword123"
+}
+
+### 🔒 CAMBIAR CONTRASEÑA DESDE PERFIL
+PATCH http://localhost:3000/api/user/password
+Authorization: Bearer [[TOKEN]]
+Content-Type: application/json
+
+{
+  "currentPassword": "PasswordActual123",
+  "newPassword": "NuevaPassword456"
+}
+
+### 🤝 INVITAR A UN USUARIO COMO GUEST
+POST http://localhost:3000/api/user/invite
+Authorization: Bearer [[TOKEN]]
+Content-Type: application/json
+
+{
+  "email": "nuevoinvitado@ejemplo.com"
+}

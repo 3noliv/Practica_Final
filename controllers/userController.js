@@ -194,13 +194,18 @@ const getCurrentUser = async (req, res) => {
 
 const updateOnboarding = async (req, res) => {
   try {
-    const { name, surname, nif } = req.body;
+    const { name, surname, nif, autonomo } = req.body;
 
     const user = await User.findById(req.user.id);
     if (!user)
       return res.status(404).json({ message: "Usuario no encontrado" });
 
     user.personalData = { name, surname, nif };
+
+    if (typeof autonomo === "boolean") {
+      user.autonomo = autonomo;
+    }
+
     await user.save();
 
     res.json({ message: "✅ Datos personales actualizados correctamente" });
@@ -211,16 +216,36 @@ const updateOnboarding = async (req, res) => {
 
 const updateCompany = async (req, res) => {
   try {
-    const { name, cif, address } = req.body;
     const user = await User.findById(req.user.id);
-
     if (!user)
       return res.status(404).json({ message: "Usuario no encontrado" });
 
-    user.companyData = { name, cif, address };
+    if (user.autonomo) {
+      const { name, surname, nif } = user.personalData;
+
+      if (!name || !surname || !nif) {
+        return res.status(400).json({
+          message:
+            "Faltan datos personales para completar los datos de la compañía como autónomo",
+        });
+      }
+
+      user.companyData = {
+        name: `${name} ${surname}`,
+        cif: nif,
+        address: "Dirección no especificada", // o un valor por defecto
+      };
+    } else {
+      const { name, cif, address } = req.body;
+      user.companyData = { name, cif, address };
+    }
+
     await user.save();
 
-    res.json({ message: "✅ Datos de la compañía actualizados correctamente" });
+    res.json({
+      message: "✅ Datos de la compañía actualizados correctamente",
+      companyData: user.companyData,
+    });
   } catch (error) {
     handleHttpError(res, error, "Error al actualizar los datos de la compañía");
   }

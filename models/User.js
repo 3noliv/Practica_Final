@@ -45,6 +45,10 @@ const UserSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    autonomo: {
+      type: Boolean,
+      default: false,
+    },
     personalData: {
       name: String,
       surname: String,

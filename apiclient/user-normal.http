@@ -1,0 +1,64 @@
+### 🔐 REGISTRO DE USUARIO NORMAL
+POST http://localhost:3000/api/user/register
+Content-Type: application/json
+
+{
+  "email": "usuario@example.com",
+  "password": "Contrasena123"
+}
+
+### 🔑 LOGIN (obtener token)
+POST http://localhost:3000/api/user/login
+Content-Type: application/json
+
+{
+  "email": "usuario@example.com",
+  "password": "Contrasena123"
+}
+
+### ✅ VALIDAR EMAIL
+PUT http://localhost:3000/api/user/validation
+Authorization: Bearer [[TOKEN]]
+Content-Type: application/json
+
+{
+  "code": "123456"
+}
+
+### 🧾 ONBOARDING (USUARIO NORMAL)
+PUT http://localhost:3000/api/user/register
+Authorization: Bearer [[TOKEN]]
+Content-Type: application/json
+
+{
+  "name": "Juan",
+  "surname": "Pérez",
+  "nif": "12345678Z"
+}
+
+### 🏢 DATOS DE EMPRESA (USUARIO NORMAL)
+PATCH http://localhost:3000/api/user/company
+Authorization: Bearer [[TOKEN]]
+Content-Type: application/json
+
+{
+  "name": "Empresa S.A.",
+  "cif": "B12345678",
+  "address": "Calle Falsa 123"
+}
+
+### 📎 SUBIDA DE LOGO
+PATCH http://localhost:3000/api/user/logo
+Authorization: Bearer [[TOKEN]]
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="logo"; filename="logo.png"
+Content-Type: image/png
+
+< ./test_uploads/logo.png
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 👤 OBTENER DATOS DEL USUARIO AUTENTICADO
+GET http://localhost:3000/api/user/me
+Authorization: Bearer [[TOKEN]]

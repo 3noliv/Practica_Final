@@ -60,6 +60,11 @@ const validateOnboarding = [
     .matches(/^[0-9]{8}[A-Z]$/)
     .withMessage("El NIF debe tener 8 números seguidos de una letra mayúscula"),
 
+  check("autonomo")
+    .optional()
+    .isBoolean()
+    .withMessage("El campo 'autonomo' debe ser true o false"),
+
   (req, res, next) => validateResults(req, res, next),
 ];
 

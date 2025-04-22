@@ -31,25 +31,46 @@ const router = express.Router();
 /**
  * @openapi
  * /api/user/register:
- *   post:
+ *   put:
  *     tags:
- *       - Auth
- *     summary: Registro de usuario
+ *       - Perfil
+ *     summary: Completar onboarding con nombre, apellidos, NIF y estado de autónomo
+ *     description: >
+ *       Este endpoint permite al usuario completar su información personal.
+ *       Si marca `autonomo: true`, sus datos personales se usarán más adelante
+ *       como datos de empresa automáticamente.
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required: [email, password]
+ *             required: [name, surname, nif]
  *             properties:
- *               email:
+ *               name:
  *                 type: string
- *               password:
+ *                 example: Juan
+ *               surname:
  *                 type: string
+ *                 example: Pérez
+ *               nif:
+ *                 type: string
+ *                 example: 12345678Z
+ *               autonomo:
+ *                 type: boolean
+ *                 example: true
+ *                 description: Si es true, los datos de la empresa se completarán con estos datos personales
  *     responses:
  *       200:
- *         description: Usuario registrado correctamente
+ *         description: Onboarding actualizado correctamente
+ *       400:
+ *         description: Datos inválidos o incompletos
+ *       401:
+ *         description: No autenticado
+ *       500:
+ *         description: Error interno del servidor
  */
 router.post("/register", validateRegister, registerUser);
 
@@ -162,11 +183,49 @@ router.put("/reset-password", resetPassword);
  *     tags:
  *       - Perfil
  *     summary: Obtener datos del usuario autenticado
+ *     description: >
+ *       Devuelve los datos personales, empresa, rol, email, y si el usuario es autónomo.
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Datos del usuario actual
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     email:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *                     autonomo:
+ *                       type: boolean
+ *                     personalData:
+ *                       type: object
+ *                       properties:
+ *                         name:
+ *                           type: string
+ *                         surname:
+ *                           type: string
+ *                         nif:
+ *                           type: string
+ *                     companyData:
+ *                       type: object
+ *                       properties:
+ *                         name:
+ *                           type: string
+ *                         cif:
+ *                           type: string
+ *                         address:
+ *                           type: string
+ *                     logoUrl:
+ *                       type: string
  */
 router.get("/me", authMiddleware, getCurrentUser);
 
@@ -206,15 +265,19 @@ router.put("/register", authMiddleware, validateOnboarding, updateOnboarding);
  *     tags:
  *       - Perfil
  *     summary: Actualizar datos de la empresa
+ *     description: >
+ *       Este endpoint actualiza los datos de la empresa del usuario autenticado.
+ *       - Si el usuario **no es autónomo**, debe enviar `name`, `cif` y `address` en el body.
+ *       - Si el usuario **es autónomo**, los datos de empresa se completarán automáticamente
+ *         a partir de los datos personales (`name`, `surname`, `nif`) del usuario, por lo que **no es necesario enviar datos en el body**.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
- *       required: true
+ *       required: false
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required: [name, cif, address]
  *             properties:
  *               name:
  *                 type: string
@@ -222,9 +285,19 @@ router.put("/register", authMiddleware, validateOnboarding, updateOnboarding);
  *                 type: string
  *               address:
  *                 type: string
+ *           example:
+ *             name: Empresa S.A.
+ *             cif: B12345678
+ *             address: Calle Falsa 123
  *     responses:
  *       200:
  *         description: Empresa actualizada correctamente
+ *       400:
+ *         description: Faltan datos personales si el usuario es autónomo
+ *       401:
+ *         description: No autenticado
+ *       500:
+ *         description: Error interno del servidor
  */
 router.patch("/company", authMiddleware, validateCompany, updateCompany);
 

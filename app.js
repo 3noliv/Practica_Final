@@ -1,5 +1,5 @@
 const express = require("express");
-const setupSwagger = require("./config/swagger");
+const setupSwagger = require("./docs/swagger");
 const cors = require("cors");
 require("dotenv").config();
 const morganBody = require("morgan-body");
