@@ -173,6 +173,31 @@ const getArchivedProjects = async (req, res) => {
   }
 };
 
+const restoreProject = async (req, res) => {
+  try {
+    const projectId = req.params.id;
+    const project = await Project.findOneDeleted({ _id: projectId });
+
+    if (!project) {
+      return res
+        .status(404)
+        .json({ message: "Proyecto no archivado o inexistente" });
+    }
+
+    if (String(project.owner) !== req.user.id) {
+      return res
+        .status(403)
+        .json({ message: "No tienes permiso para restaurar este proyecto" });
+    }
+
+    await Project.restore({ _id: projectId });
+
+    res.json({ message: "✅ Proyecto restaurado correctamente" });
+  } catch (error) {
+    handleHttpError(res, "ERROR_RESTORE_PROJECT");
+  }
+};
+
 module.exports = {
   createProject,
   updateProject,
@@ -180,4 +205,5 @@ module.exports = {
   getProjectById,
   deleteProject,
   getArchivedProjects,
+  restoreProject,
 };

@@ -48,3 +48,8 @@ Authorization: Bearer [[TOKEN]]
 GET http://localhost:3000/api/project/archived
 Authorization: Bearer [[TOKEN]]
 
+
+### Restaurar proyecto archivado
+PUT http://localhost:3000/api/project/restore/PROJECT_ID_AQUI
+Authorization: Bearer [[TOKEN]]
+

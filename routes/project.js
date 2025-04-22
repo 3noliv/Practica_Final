@@ -7,6 +7,7 @@ const {
   getProjectById,
   deleteProject,
   getArchivedProjects,
+  restoreProject,
 } = require("../controllers/projectController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const {
@@ -187,5 +188,29 @@ router.delete("/:id", authMiddleware, deleteProject);
  *         description: No autorizado
  */
 router.get("/archived", authMiddleware, getArchivedProjects);
+
+/**
+ * @openapi
+ * /api/project/restore/{id}:
+ *   put:
+ *     tags:
+ *       - Proyectos
+ *     summary: Restaurar un proyecto archivado
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del proyecto a restaurar
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Proyecto restaurado correctamente
+ *       404:
+ *         description: Proyecto no encontrado o no archivado
+ */
+router.put("/restore/:id", authMiddleware, restoreProject);
 
 module.exports = router;
