@@ -26,3 +26,7 @@ Authorization: Bearer [[TOKEN]]
 ### Obtener todos los proyectos del usuario o su compañía
 GET http://localhost:3000/api/project
 Authorization: Bearer [[TOKEN]]
+
+### Obtener un proyecto específico por ID
+GET http://localhost:3000/api/project/PROJECT_ID_AQUI
+Authorization: Bearer [[TOKEN]]

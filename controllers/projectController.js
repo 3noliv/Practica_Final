@@ -99,8 +99,30 @@ const getProjects = async (req, res) => {
   }
 };
 
+const getProjectById = async (req, res) => {
+  try {
+    const projectId = req.params.id;
+    const userId = req.user.id;
+    const companyId = req.user.companyId;
+
+    const project = await Project.findOne({
+      _id: projectId,
+      $or: [{ owner: userId }, { companyId: companyId }],
+    }).populate("client", "name");
+
+    if (!project) {
+      return res.status(404).json({ message: "Proyecto no encontrado" });
+    }
+
+    res.json({ project });
+  } catch (error) {
+    handleHttpError(res, "ERROR_GET_PROJECT_BY_ID");
+  }
+};
+
 module.exports = {
   createProject,
   updateProject,
   getProjects,
+  getProjectById,
 };

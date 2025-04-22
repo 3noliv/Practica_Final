@@ -4,6 +4,7 @@ const {
   createProject,
   updateProject,
   getProjects,
+  getProjectById,
 } = require("../controllers/projectController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const {
@@ -113,5 +114,29 @@ router.put("/:id", authMiddleware, validateUpdateProject, updateProject);
  *         description: No autorizado
  */
 router.get("/", authMiddleware, getProjects);
+
+/**
+ * @openapi
+ * /api/project/{id}:
+ *   get:
+ *     tags:
+ *       - Proyectos
+ *     summary: Obtener un proyecto por su ID
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del proyecto a consultar
+ *     responses:
+ *       200:
+ *         description: Datos del proyecto
+ *       404:
+ *         description: Proyecto no encontrado o no autorizado
+ */
+router.get("/:id", authMiddleware, getProjectById);
 
 module.exports = router;
