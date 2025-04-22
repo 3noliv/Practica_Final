@@ -153,10 +153,31 @@ const deleteProject = async (req, res) => {
   }
 };
 
+const getArchivedProjects = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const companyId = req.user.companyId;
+
+    const query = {
+      $or: [{ owner: userId }, { companyId: companyId }],
+    };
+
+    const projects = await Project.findDeleted(query).populate(
+      "client",
+      "name"
+    );
+
+    res.json({ archived: projects });
+  } catch (error) {
+    handleHttpError(res, "ERROR_GET_ARCHIVED_PROJECTS");
+  }
+};
+
 module.exports = {
   createProject,
   updateProject,
   getProjects,
   getProjectById,
   deleteProject,
+  getArchivedProjects,
 };

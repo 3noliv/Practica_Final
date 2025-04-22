@@ -42,3 +42,9 @@ Authorization: Bearer [[TOKEN]]
 ### Eliminar proyecto permanentemente (hard delete)
 DELETE http://localhost:3000/api/project/PROJECT_ID_AQUI?soft=false
 Authorization: Bearer [[TOKEN]]
+
+
+### Obtener lista de proyectos archivados
+GET http://localhost:3000/api/project/archived
+Authorization: Bearer [[TOKEN]]
+
