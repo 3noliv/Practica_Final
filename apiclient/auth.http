@@ -1,0 +1,53 @@
+### 1. Registro de usuario
+POST http://localhost:3000/api/user/register
+Content-Type: application/json
+
+{
+  "email": "ivan.martinez@live.u-tad.com",
+  "password": "Password123"
+}
+
+
+
+### 2. Login (para obtener el token)
+POST http://localhost:3000/api/user/login
+Content-Type: application/json
+
+{
+  "email": "ivan.martinez@live.u-tad.com",
+  "password": "Password123"
+}
+
+
+
+### 3. Validación del email (con token y código)
+PUT http://localhost:3000/api/user/validation
+Content-Type: application/json
+Authorization: Bearer [[TOKEN]]
+
+{
+  "code": "829848"
+}
+
+
+
+### Resetear contraseña
+PUT http://localhost:3000/api/user/reset-password
+Content-Type: application/json
+
+{
+  "token": "EL_TOKEN_QUE_VES_EN_CONSOLA",
+  "newPassword": "NuevaPass123"
+}
+
+
+
+### Login de invitado (cuenta aún sin verificar)
+POST http://localhost:3000/api/user/login
+Content-Type: application/json
+
+{
+  "email": "invitado@correo.com",
+  "password": "contraseñaTemporal"
+}
+

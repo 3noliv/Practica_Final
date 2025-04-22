@@ -1,0 +1,100 @@
+### # IMPORTANTE: Sustituir [[TOKEN]] por un JWT válido antes de probar
+
+
+
+### 4. Onboarding - Datos personales
+PUT http://localhost:3000/api/user/register
+Content-Type: application/json
+Authorization: Bearer [[TOKEN]]
+
+{
+  "name": "Juan",
+  "surname": "Pérez",
+  "nif": "12345678Z"
+}
+
+
+
+### 5. Datos de la compañía
+PATCH http://localhost:3000/api/user/company
+Content-Type: application/json
+Authorization: Bearer [[TOKEN]]
+
+{
+  "name": "Empresa S.A.",
+  "cif": "B12345678",
+  "address": "Calle Falsa 123"
+}
+
+
+
+### Subida de logo
+PATCH http://localhost:3000/api/user/logo
+Authorization: Bearer [[TOKEN]]
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="logo"; filename="logo.png"
+Content-Type: image/png
+
+< ./test_uploads/logo.png
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+
+
+### Obtener datos del usuario autenticado
+GET http://localhost:3000/api/user/me
+Authorization: Bearer [[TOKEN]]
+
+
+
+### Soft delete
+DELETE http://localhost:3000/api/user
+Authorization: Bearer [[TOKEN]]
+
+
+
+### Hard delete
+DELETE http://localhost:3000/api/user?soft=false
+Authorization: Bearer [[TOKEN]]
+
+
+
+### Restore de soft
+PUT http://localhost:3000/api/user/restore
+Content-Type: application/json
+Authorization: Bearer [[TOKEN]]
+
+
+
+### Iniciar recuperación
+POST http://localhost:3000/api/user/recover
+Content-Type: application/json
+
+{
+  "email": "ivan.martinez@live.u-tad.com"
+}
+
+
+
+### Cambiar contraseña desde perfil (requiere login)
+PATCH http://localhost:3000/api/user/password
+Content-Type: application/json
+Authorization: Bearer [[TOKEN]]
+
+{
+  "currentPassword": "Password123",
+  "newPassword": "NuevaPassword456"
+}
+
+
+
+### Invitar a usuario como guest (requiere token del invitador)
+POST http://localhost:3000/api/user/invite
+Content-Type: application/json
+Authorization: Bearer [[TOKEN]]
+
+{
+  "email": "enoliv02@gmail.com"
+}
+
