@@ -5,6 +5,7 @@ const {
   updateProject,
   getProjects,
   getProjectById,
+  deleteProject,
 } = require("../controllers/projectController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const {
@@ -138,5 +139,35 @@ router.get("/", authMiddleware, getProjects);
  *         description: Proyecto no encontrado o no autorizado
  */
 router.get("/:id", authMiddleware, getProjectById);
+
+/**
+ * @openapi
+ * /api/project/{id}:
+ *   delete:
+ *     tags:
+ *       - Proyectos
+ *     summary: Archivar o eliminar permanentemente un proyecto
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID del proyecto a eliminar
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: soft
+ *         required: false
+ *         description: true (por defecto) para soft delete, false para eliminar definitivamente
+ *         schema:
+ *           type: boolean
+ *     responses:
+ *       200:
+ *         description: Proyecto archivado o eliminado correctamente
+ *       404:
+ *         description: Proyecto no encontrado
+ */
+router.delete("/:id", authMiddleware, deleteProject);
 
 module.exports = router;

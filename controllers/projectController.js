@@ -120,9 +120,43 @@ const getProjectById = async (req, res) => {
   }
 };
 
+const deleteProject = async (req, res) => {
+  try {
+    const projectId = req.params.id;
+    const soft = req.query.soft !== "false";
+
+    const project = await Project.findById(projectId);
+    if (!project || project.deleted) {
+      return res.status(404).json({ message: "Proyecto no encontrado" });
+    }
+
+    // Verificación de permisos
+    if (String(project.owner) !== req.user.id) {
+      return res
+        .status(403)
+        .json({ message: "No tienes permiso para eliminar este proyecto" });
+    }
+
+    if (soft) {
+      await project.delete();
+      res.json({
+        message: "✅ Proyecto archivado correctamente (soft delete)",
+      });
+    } else {
+      await project.deleteOne();
+      res.json({
+        message: "🗑️ Proyecto eliminado permanentemente (hard delete)",
+      });
+    }
+  } catch (error) {
+    handleHttpError(res, "ERROR_DELETE_PROJECT");
+  }
+};
+
 module.exports = {
   createProject,
   updateProject,
   getProjects,
   getProjectById,
+  deleteProject,
 };

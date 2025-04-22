@@ -23,10 +23,22 @@ Authorization: Bearer [[TOKEN]]
   "endDate": "2024-08-31"
 }
 
+
 ### Obtener todos los proyectos del usuario o su compañía
 GET http://localhost:3000/api/project
 Authorization: Bearer [[TOKEN]]
 
+
 ### Obtener un proyecto específico por ID
 GET http://localhost:3000/api/project/PROJECT_ID_AQUI
+Authorization: Bearer [[TOKEN]]
+
+
+### Archivar proyecto (soft delete por defecto)
+DELETE http://localhost:3000/api/project/PROJECT_ID_AQUI
+Authorization: Bearer [[TOKEN]]
+
+
+### Eliminar proyecto permanentemente (hard delete)
+DELETE http://localhost:3000/api/project/PROJECT_ID_AQUI?soft=false
 Authorization: Bearer [[TOKEN]]
