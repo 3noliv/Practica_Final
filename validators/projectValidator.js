@@ -29,6 +29,27 @@ const validateCreateProject = [
   (req, res, next) => validateResults(req, res, next),
 ];
 
+const validateUpdateProject = [
+  check("name")
+    .optional()
+    .notEmpty()
+    .withMessage("El nombre no puede estar vacío"),
+
+  check("description").optional().isString(),
+
+  check("client")
+    .optional()
+    .isMongoId()
+    .withMessage("Debe ser un ID válido de cliente"),
+
+  check("startDate").optional().isISO8601(),
+
+  check("endDate").optional().isISO8601(),
+
+  (req, res, next) => validateResults(req, res, next),
+];
+
 module.exports = {
   validateCreateProject,
+  validateUpdateProject,
 };

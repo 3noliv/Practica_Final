@@ -10,3 +10,15 @@ Authorization: Bearer [[TOKEN]]
   "startDate": "2024-05-01",
   "endDate": "2024-07-31"
 }
+
+### Editar proyecto (requiere token y ID de proyecto válido)
+PUT http://localhost:3000/api/project/PROJECT_ID_AQUI
+Content-Type: application/json
+Authorization: Bearer [[TOKEN]]
+
+{
+  "name": "Proyecto Web Actualizado",
+  "description": "Versión renovada del proyecto",
+  "startDate": "2024-05-15",
+  "endDate": "2024-08-31"
+}
