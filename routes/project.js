@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   createProject,
   updateProject,
+  getProjects,
 } = require("../controllers/projectController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const {
@@ -95,5 +96,22 @@ router.post("/", authMiddleware, validateCreateProject, createProject);
  *         description: Proyecto duplicado
  */
 router.put("/:id", authMiddleware, validateUpdateProject, updateProject);
+
+/**
+ * @openapi
+ * /api/project:
+ *   get:
+ *     tags:
+ *       - Proyectos
+ *     summary: Obtener todos los proyectos del usuario o de su compañía
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de proyectos disponibles
+ *       401:
+ *         description: No autorizado
+ */
+router.get("/", authMiddleware, getProjects);
 
 module.exports = router;

@@ -80,7 +80,27 @@ const updateProject = async (req, res) => {
   }
 };
 
+const getProjects = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const companyId = req.user.companyId;
+
+    const query = {
+      $or: [{ owner: userId }, { companyId: companyId }],
+    };
+
+    const projects = await Project.find(query)
+      .populate("client", "name") // opcional: solo traemos el nombre del cliente
+      .sort({ createdAt: -1 });
+
+    res.json({ projects });
+  } catch (error) {
+    handleHttpError(res, "ERROR_GET_PROJECTS");
+  }
+};
+
 module.exports = {
   createProject,
   updateProject,
+  getProjects,
 };

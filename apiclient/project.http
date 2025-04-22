@@ -22,3 +22,7 @@ Authorization: Bearer [[TOKEN]]
   "startDate": "2024-05-15",
   "endDate": "2024-08-31"
 }
+
+### Obtener todos los proyectos del usuario o su compañía
+GET http://localhost:3000/api/project
+Authorization: Bearer [[TOKEN]]
