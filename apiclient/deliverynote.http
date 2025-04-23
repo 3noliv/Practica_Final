@@ -1,0 +1,55 @@
+### Crear albarán (horas o materiales)
+POST http://localhost:3000/api/deliverynote HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer [[TOKEN]]
+
+{
+  "type": "horas",
+  "clientId": "{{clientId}}",
+  "projectId": "{{projectId}}",
+  "entries": [
+    {
+      "name": "Trabajador A",
+      "quantity": 5,
+      "unit": "horas",
+      "description": "Mantenimiento preventivo"
+    },
+    {
+      "name": "Trabajador B",
+      "quantity": 3,
+      "unit": "horas"
+    }
+  ]
+}
+
+### Listar todos los albaranes del usuario
+GET http://localhost:3000/api/deliverynote HTTP/1.1
+Authorization: Bearer [[TOKEN]]
+
+
+### Obtener un albarán por ID
+GET http://localhost:3000/api/deliverynote/{{noteId}} HTTP/1.1
+Authorization: Bearer [[TOKEN]]
+
+
+### Descargar albarán como PDF
+GET http://localhost:3000/api/deliverynote/pdf/{{noteId}} HTTP/1.1
+Authorization: Bearer [[TOKEN]]
+
+
+### Firmar un albarán con imagen (IPFS)
+PATCH http://localhost:3000/api/deliverynote/sign/{{noteId}} HTTP/1.1
+Authorization: Bearer [[TOKEN]]
+Content-Type: multipart/form-data
+
+--boundary
+Content-Disposition: form-data; name="image"; filename="firma.png"
+Content-Type: image/png
+
+< ./test_uploads/firma.png
+--boundary--
+
+
+### Eliminar un albarán (solo si no está firmado)
+DELETE http://localhost:3000/api/deliverynote/{{noteId}} HTTP/1.1
+Authorization: Bearer [[TOKEN]]

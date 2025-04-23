@@ -1,4 +1,4 @@
-const Project = require("../models/Project");
+const Project = require("../models/Projects");
 const { handleHttpError } = require("../utils/handleError");
 
 /**
