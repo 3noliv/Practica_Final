@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const authMiddleware = require("../middlewares/authMiddleware");
-const { validatorCreateDeliveryNote } = require("../validators/deliverynote");
+const { validatorCreateDeliveryNote } = require("../validators/deliverynoteValidator");
 const {
   createDeliveryNote,
   getDeliveryNotes,
@@ -10,7 +10,7 @@ const {
   generatePdf,
   signDeliveryNote,
   deleteDeliveryNote,
-} = require("../controllers/deliverynote");
+} = require("../controllers/deliverynoteController");
 const { uploadMiddlewareMemory } = require("../utils/handleStorage");
 const { validatorGetItem } = require("../validators/utils");
 

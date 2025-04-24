@@ -1,12 +1,17 @@
 const handleHttpError = (res, err, defaultMsg = "Algo salió mal") => {
   console.error("❌ Error capturado:", err);
 
+  // 👉 Si te pasan un mensaje de error y además un statusCode (como tercer parámetro)
+  if (typeof err === "string" && typeof defaultMsg === "number") {
+    return res.status(defaultMsg).json({ error: err });
+  }
+
   // Error de validación de mongoose
   if (err.name === "ValidationError") {
     return res.status(400).json({ error: err.message });
   }
 
-  // Error al castear ObjectId (por ejemplo, cuando :id es inválido)
+  // Error al castear ObjectId
   if (err.name === "CastError") {
     return res.status(400).json({ error: "ID inválido o mal formado" });
   }
@@ -23,7 +28,7 @@ const handleHttpError = (res, err, defaultMsg = "Algo salió mal") => {
       .json({ error: "Token expirado, vuelve a iniciar sesión" });
   }
 
-  // Otros errores conocidos
+  // Error de índice duplicado
   if (err.code === 11000) {
     return res
       .status(409)

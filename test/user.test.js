@@ -144,12 +144,25 @@ describe("User API - flujo completo", () => {
     token = loginRes.body.token;
   });
 
-  // 11. Hard delete
-  it("should hard delete user", async () => {
+  // 11. Hard delete (usuario temporal)
+  it("should hard delete a new user", async () => {
+    const tempEmail = `tempuser${Date.now()}@mail.com`;
+
     const res = await request(app)
+      .post("/api/user/register")
+      .send({ email: tempEmail, password: "TempPassword123" });
+
+    expect(res.statusCode).toBe(201);
+    const tempToken = res.body.token;
+
+    // Forzar verificación
+    await User.findOneAndUpdate({ email: tempEmail }, { status: "verified" });
+
+    const deleteRes = await request(app)
       .delete("/api/user?soft=false")
-      .set("Authorization", `Bearer ${token}`);
-    expect(res.statusCode).toBe(200);
+      .set("Authorization", `Bearer ${tempToken}`);
+
+    expect(deleteRes.statusCode).toBe(200);
   });
 
   // 12. Invitar guest

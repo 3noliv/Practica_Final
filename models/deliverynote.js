@@ -1,21 +1,21 @@
 const mongoose = require("mongoose");
 const mongooseDelete = require("mongoose-delete");
 
-const DeliveryNoteScheme = new mongoose.Schema(
+const DeliveryNoteSchema = new mongoose.Schema(
   {
     createdBy: {
       type: mongoose.Types.ObjectId,
-      ref: "users",
+      ref: "User",
       required: true,
     },
     clientId: {
       type: mongoose.Types.ObjectId,
-      ref: "clients",
+      ref: "Client",
       required: true,
     },
     projectId: {
       type: mongoose.Types.ObjectId,
-      ref: "projects",
+      ref: "Project",
       required: true,
     },
     type: {
@@ -51,6 +51,6 @@ const DeliveryNoteScheme = new mongoose.Schema(
 );
 
 // Soft delete
-DeliveryNoteScheme.plugin(mongooseDelete, { overrideMethods: "all" });
+DeliveryNoteSchema.plugin(mongooseDelete, { overrideMethods: "all" });
 
-module.exports = mongoose.model("deliverynotes", DeliveryNoteScheme);
+module.exports = mongoose.model("DeliveryNote", DeliveryNoteSchema);

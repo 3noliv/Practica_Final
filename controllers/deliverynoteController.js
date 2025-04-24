@@ -1,16 +1,16 @@
 const { matchedData } = require("express-validator");
 const { handleHttpError } = require("../utils/handleError");
 const { uploadToPinata } = require("../utils/handleUploadIPFS");
-const { deliverynotes } = require("../models/deliverynote");
+const mongoose = require("mongoose");
+const DeliveryNote = require("../models/DeliveryNote");
 const PDFDocument = require("pdfkit");
-const getStream = require("get-stream");
 
 // Crear albarán
 const createDeliveryNote = async (req, res) => {
   try {
     const user = req.user;
     const body = matchedData(req);
-    const data = await deliverynotesModel.create({
+    const data = await DeliveryNote.create({
       ...body,
       createdBy: user._id,
     });
@@ -24,21 +24,23 @@ const createDeliveryNote = async (req, res) => {
 const getDeliveryNotes = async (req, res) => {
   try {
     const user = req.user;
+    const companyUsers = user.companyUsers ?? [];
 
     const query = {
       $or: [
-        { createdBy: user._id },
-        { createdBy: { $in: user.companyUsers || [] } },
+        { createdBy: user._id }, // SIN mongoose.ObjectId (ya es un ObjectId en test)
+        { createdBy: { $in: companyUsers } },
       ],
     };
 
-    const data = await deliverynotesModel
-      .find(query)
+    const data = await DeliveryNote.find(query)
       .populate("clientId")
-      .populate("projectId");
+      .populate("projectId")
+      .populate("createdBy", "name email");
 
     res.send(data);
   } catch (err) {
+    console.error("❌ ERROR REAL:", err);
     handleHttpError(res, "ERROR_GET_DELIVERYNOTES");
   }
 };
@@ -46,10 +48,8 @@ const getDeliveryNotes = async (req, res) => {
 // Obtener un albarán por ID
 const getDeliveryNote = async (req, res) => {
   try {
-    const { id } = matchedData(req);
-
-    const data = await deliverynotesModel
-      .findById(id)
+    const id = req.params.id;
+    const data = await DeliveryNote.findById(id)
       .populate("createdBy")
       .populate("clientId")
       .populate("projectId");
@@ -58,7 +58,6 @@ const getDeliveryNote = async (req, res) => {
       return handleHttpError(res, "DELIVERYNOTE_NOT_FOUND", 404);
     }
 
-    // Comprobamos que sea del usuario o su compañía
     const user = req.user;
     const isAllowed =
       data.createdBy.equals(user._id) ||
@@ -76,11 +75,10 @@ const getDeliveryNote = async (req, res) => {
 
 const generatePdf = async (req, res) => {
   try {
-    const { id } = matchedData(req);
+    const id = req.params.id;
     const user = req.user;
 
-    const note = await deliverynotesModel
-      .findById(id)
+    const note = await DeliveryNote.findById(id)
       .populate("createdBy")
       .populate("clientId")
       .populate("projectId");
@@ -137,7 +135,7 @@ const signDeliveryNote = async (req, res) => {
     const fileBuffer = req.file.buffer;
     const fileName = req.file.originalname;
 
-    const note = await deliverynotesModel.findById(id);
+    const note = await DeliveryNote.findById(id);
     if (!note) return handleHttpError(res, "NOT_FOUND", 404);
     if (note.signed) return handleHttpError(res, "ALREADY_SIGNED", 400);
 
@@ -156,14 +154,14 @@ const signDeliveryNote = async (req, res) => {
 
 const deleteDeliveryNote = async (req, res) => {
   try {
-    const { id } = matchedData(req);
-    const note = await deliverynotesModel.findById(id);
+    const id = req.params.id;
+    const note = await DeliveryNote.findById(id);
 
     if (!note) return handleHttpError(res, "DELIVERYNOTE_NOT_FOUND", 404);
     if (note.signed)
-      return handleHttpError(res, "CANNOT_DELETE_SIGNED_NOTE", 403);
+      return handleHttpError(res, "CANNOT_DELETE_SIGNED_NOTE", 403);    
 
-    const data = await deliverynotesModel.delete({ _id: id });
+    const data = await DeliveryNote.delete({ _id: id });
     res.send(data);
   } catch (err) {
     handleHttpError(res, "ERROR_DELETE_DELIVERYNOTE");
