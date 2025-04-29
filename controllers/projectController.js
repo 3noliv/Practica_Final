@@ -1,4 +1,5 @@
 const Project = require("../models/Projects");
+const { matchedData } = require("express-validator");
 const { handleHttpError } = require("../utils/handleError");
 
 /**
@@ -6,13 +7,17 @@ const { handleHttpError } = require("../utils/handleError");
  */
 const createProject = async (req, res) => {
   try {
-    const { name, description, client, startDate, endDate } = req.body;
+    const body = matchedData(req);
 
     const owner = req.user.id;
     const companyId = req.user.companyId || null;
 
-    // Evitar duplicado (por nombre + cliente + propietario)
-    const exists = await Project.findOne({ name, client, owner });
+    const exists = await Project.findOne({
+      name: body.name,
+      client: body.client,
+      owner,
+    });
+
     if (exists) {
       return res.status(409).json({
         message: "Ya existe un proyecto con ese nombre para ese cliente",
@@ -20,13 +25,9 @@ const createProject = async (req, res) => {
     }
 
     const newProject = await Project.create({
-      name,
-      description,
-      client,
+      ...body,
       owner,
       companyId,
-      startDate,
-      endDate,
     });
 
     res.status(201).json({ project: newProject });
@@ -38,7 +39,7 @@ const createProject = async (req, res) => {
 const updateProject = async (req, res) => {
   try {
     const projectId = req.params.id;
-    const { name, client } = req.body;
+    const body = matchedData(req);
 
     const project = await Project.findById(projectId);
 
@@ -52,17 +53,16 @@ const updateProject = async (req, res) => {
         .json({ message: "No tienes permiso para editar este proyecto" });
     }
 
-    // Si cambian el nombre y el cliente, comprobamos duplicado
     if (
-      name &&
-      client &&
-      (name !== project.name || client !== String(project.client))
+      body.name &&
+      body.client &&
+      (body.name !== project.name || body.client !== String(project.client))
     ) {
       const duplicate = await Project.findOne({
-        name,
-        client,
+        name: body.name,
+        client: body.client,
         owner: req.user.id,
-        _id: { $ne: projectId }, // Excluirse a sí mismo
+        _id: { $ne: projectId },
       });
       if (duplicate) {
         return res.status(409).json({
@@ -71,7 +71,7 @@ const updateProject = async (req, res) => {
       }
     }
 
-    Object.assign(project, req.body);
+    Object.assign(project, body);
     await project.save();
 
     res.json({ message: "✅ Proyecto actualizado correctamente", project });
