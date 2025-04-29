@@ -8,6 +8,8 @@ const { uploadToPinata } = require("../utils/handleUploadIPFS");
 const { handleHttpError } = require("../utils/handleError");
 const { tokenSign } = require("../utils/handleJwt");
 
+const MAX_LOGO_SIZE = 2 * 1024 * 1024; // 2MB
+
 // Registro de usuario
 const registerUser = async (req, res) => {
   try {
@@ -247,6 +249,12 @@ const updateLogo = async (req, res) => {
       return res
         .status(400)
         .json({ message: "No se ha subido ningún archivo" });
+
+    if (req.file.size > MAX_LOGO_SIZE) {
+      return res.status(400).json({
+        message: "El tamaño máximo permitido para el logo es de 2MB",
+      });
+    }
 
     // Subir a IPFS vía Pinata
     const pinataRes = await uploadToPinata(
