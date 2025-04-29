@@ -1,50 +1,42 @@
 const User = require("../models/User");
-const jwt = require("jsonwebtoken");
+const { matchedData } = require("express-validator");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const generateCode = require("../utils/generateCode");
 const { sendEmail } = require("../utils/handleEmail");
 const { uploadToPinata } = require("../utils/handleUploadIPFS");
 const { handleHttpError } = require("../utils/handleError");
+const { tokenSign } = require("../utils/handleJwt");
 
 // Registro de usuario
 const registerUser = async (req, res) => {
   try {
-    console.log("🟢 Recibiendo datos:", req.body);
-    const data = req.body;
+    const bodyClean = matchedData(req);
 
-    if (!data.email || !data.password) {
+    if (!bodyClean.email || !bodyClean.password) {
       return res
         .status(400)
         .json({ message: "Email y password son obligatorios" });
     }
 
-    const userExists = await User.findOne({ email: data.email });
+    const userExists = await User.findOne({ email: bodyClean.email });
     if (userExists) {
-      console.log("🔴 Email ya registrado");
       return res.status(409).json({ message: "Email ya registrado" });
     }
 
     const verificationCode = generateCode();
-    console.log("🟢 Código de verificación generado:", verificationCode);
 
-    const newUser = new User({ ...data, verificationCode });
+    const newUser = new User({ ...bodyClean, verificationCode });
     await newUser.save();
-    console.log("✅ Usuario guardado en la base de datos");
 
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = await tokenSign(newUser);
 
-    // Enviar email con el código de verificación
     await sendEmail({
       to: newUser.email,
       subject: "Verificación de cuenta",
       text: `Tu código de verificación es: ${verificationCode}`,
       from: process.env.EMAIL,
     });
-
-    console.log("📧 Email de verificación enviado");
 
     res.status(201).json({
       user: {
@@ -110,24 +102,15 @@ const validateEmail = async (req, res) => {
 // Login
 const loginUser = async (req, res) => {
   try {
-    console.log("🟢 Recibiendo datos de login:", req.body);
+    const bodyClean = matchedData(req);
 
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-
+    const user = await User.findOne({ email: bodyClean.email });
     if (!user) {
-      console.log("🔴 Usuario no encontrado");
       return res.status(401).json({ message: "Credenciales inválidas" });
     }
 
-    console.log("🟢 Usuario encontrado:", user.email);
-
     if (user.status === "pending") {
-      // Permitimos login, pero advertimos que aún no está verificado
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-        expiresIn: "1h",
-      });
-
+      const token = await tokenSign(user);
       return res.status(200).json({
         message: "Tu cuenta está pendiente de verificación",
         user: { email: user.email, role: user.role, status: user.status },
@@ -141,8 +124,7 @@ const loginUser = async (req, res) => {
         .json({ message: "Tu cuenta ha sido deshabilitada." });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-
+    const isMatch = await bcrypt.compare(bodyClean.password, user.password);
     if (!isMatch) {
       user.loginAttempts -= 1;
 
@@ -161,15 +143,12 @@ const loginUser = async (req, res) => {
       });
     }
 
-    // Resetear intentos si el login fue correcto
+    // Si el login es exitoso, reseteamos los intentos
     user.loginAttempts = 3;
     await user.save();
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = await tokenSign(user);
 
-    console.log("✅ Login exitoso, enviando token");
     res.json({ user: { email: user.email, role: user.role }, token });
   } catch (error) {
     handleHttpError(res, error, "Error en el login");
