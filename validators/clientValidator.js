@@ -26,6 +26,19 @@ const validateCreateClient = [
   (req, res, next) => validateResults(req, res, next),
 ];
 
+const validateUpdateClient = [
+  check("name").optional().isString(),
+  check("cif")
+    .optional()
+    .matches(/^[A-Z]\d{8}$/)
+    .withMessage("El CIF debe comenzar por una letra seguida de 8 números"),
+  check("contactEmail").optional().isEmail().withMessage("Email no válido"),
+  check("contactPhone").optional().isString(),
+  check("address").optional().isString(),
+  (req, res, next) => validateResults(req, res, next),
+];
+
 module.exports = {
   validateCreateClient,
+  validateUpdateClient,
 };

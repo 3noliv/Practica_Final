@@ -111,6 +111,29 @@ const validateInvitation = [
   (req, res, next) => validateResults(req, res, next),
 ];
 
+const validateRecover = [
+  check("email")
+    .exists()
+    .withMessage("El email es obligatorio")
+    .isEmail()
+    .withMessage("Debe ser un email válido"),
+  (req, res, next) => validateResults(req, res, next),
+];
+
+const validateResetPassword = [
+  check("token")
+    .exists()
+    .withMessage("El token es obligatorio")
+    .notEmpty()
+    .withMessage("El token no puede estar vacío"),
+  check("newPassword")
+    .exists()
+    .withMessage("La nueva contraseña es obligatoria")
+    .isLength({ min: 8 })
+    .withMessage("La nueva contraseña debe tener al menos 8 caracteres"),
+  (req, res, next) => validateResults(req, res, next),
+];
+
 module.exports = {
   validateRegister,
   validateLogin,
@@ -119,4 +142,6 @@ module.exports = {
   validateCompany,
   validatePasswordChange,
   validateInvitation,
+  validateRecover,
+  validateResetPassword,
 };
