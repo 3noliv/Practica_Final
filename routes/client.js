@@ -10,7 +10,10 @@ const {
   getArchivedClients,
   restoreClient,
 } = require("../controllers/clientController");
-const { validateCreateClient } = require("../validators/clientValidator");
+const {
+  validateCreateClient,
+  validateUpdateClient,
+} = require("../validators/clientValidator");
 const authMiddleware = require("../middlewares/authMiddleware");
 
 /**
@@ -88,7 +91,7 @@ router.post("/", authMiddleware, validateCreateClient, createClient);
  *       200:
  *         description: Cliente actualizado correctamente
  */
-router.put("/:id", authMiddleware, validateCreateClient, updateClient);
+router.put("/:id", authMiddleware, validateUpdateClient, updateClient);
 
 /**
  * @openapi

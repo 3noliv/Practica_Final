@@ -24,6 +24,8 @@ const {
   validateCompany,
   validatePasswordChange,
   validateInvitation,
+  validateRecover,
+  validateResetPassword,
 } = require("../validators/userValidator");
 
 const router = express.Router();
@@ -149,7 +151,7 @@ router.post("/login", validateLogin, loginUser);
  *       200:
  *         description: Token generado (ver consola o BD)
  */
-router.post("/recover", recoverPassword);
+router.post("/recover", validateRecover, recoverPassword);
 
 /**
  * @openapi
@@ -174,7 +176,7 @@ router.post("/recover", recoverPassword);
  *       200:
  *         description: Contraseña actualizada correctamente
  */
-router.put("/reset-password", resetPassword);
+router.put("/reset-password", validateResetPassword, resetPassword);
 
 /**
  * @openapi
