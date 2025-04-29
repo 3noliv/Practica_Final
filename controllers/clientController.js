@@ -1,9 +1,10 @@
 const Client = require("../models/Client");
+const { matchedData } = require("express-validator");
 const { handleHttpError } = require("../utils/handleError");
 
 const createClient = async (req, res) => {
   try {
-    const { name, cif, address, contactEmail, contactPhone } = req.body;
+    const body = matchedData(req);
     const user = req.user;
 
     if (user.status !== "verified") {
@@ -11,7 +12,7 @@ const createClient = async (req, res) => {
     }
 
     const existing = await Client.findOne({
-      cif,
+      cif: body.cif,
       $or: [{ createdBy: user._id }, { companyId: user.companyData?.cif }],
     });
 
@@ -24,11 +25,7 @@ const createClient = async (req, res) => {
     }
 
     const newClient = new Client({
-      name,
-      cif,
-      address,
-      contactEmail,
-      contactPhone,
+      ...body,
       createdBy: user._id,
       companyId: user.companyData?.cif,
     });
@@ -47,8 +44,8 @@ const createClient = async (req, res) => {
 const updateClient = async (req, res) => {
   try {
     const clientId = req.params.id;
+    const body = matchedData(req);
     const user = req.user;
-    const updateData = req.body;
 
     const client = await Client.findById(clientId);
 
@@ -67,7 +64,7 @@ const updateClient = async (req, res) => {
       );
     }
 
-    Object.assign(client, updateData);
+    Object.assign(client, body);
     await client.save();
 
     res.json({ message: "Cliente actualizado correctamente", client });

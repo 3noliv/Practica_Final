@@ -173,16 +173,19 @@ const getCurrentUser = async (req, res) => {
 
 const updateOnboarding = async (req, res) => {
   try {
-    const { name, surname, nif, autonomo } = req.body;
-
+    const body = matchedData(req);
     const user = await User.findById(req.user.id);
     if (!user)
       return res.status(404).json({ message: "Usuario no encontrado" });
 
-    user.personalData = { name, surname, nif };
+    user.personalData = {
+      name: body.name,
+      surname: body.surname,
+      nif: body.nif,
+    };
 
-    if (typeof autonomo === "boolean") {
-      user.autonomo = autonomo;
+    if (typeof body.autonomo === "boolean") {
+      user.autonomo = body.autonomo;
     }
 
     await user.save();
@@ -195,6 +198,7 @@ const updateOnboarding = async (req, res) => {
 
 const updateCompany = async (req, res) => {
   try {
+    const body = matchedData(req);
     const user = await User.findById(req.user.id);
     if (!user)
       return res.status(404).json({ message: "Usuario no encontrado" });
@@ -212,11 +216,14 @@ const updateCompany = async (req, res) => {
       user.companyData = {
         name: `${name} ${surname}`,
         cif: nif,
-        address: "Dirección no especificada", // o un valor por defecto
+        address: "Dirección no especificada",
       };
     } else {
-      const { name, cif, address } = req.body;
-      user.companyData = { name, cif, address };
+      user.companyData = {
+        name: body.name,
+        cif: body.cif,
+        address: body.address,
+      };
     }
 
     await user.save();
@@ -303,8 +310,8 @@ const restoreUser = async (req, res) => {
 
 const recoverPassword = async (req, res) => {
   try {
-    const { email } = req.body;
-    const user = await User.findOne({ email });
+    const body = matchedData(req);
+    const user = await User.findOne({ email: body.email });
 
     if (!user) {
       return res
@@ -312,15 +319,12 @@ const recoverPassword = async (req, res) => {
         .json({ message: "No existe ningún usuario con ese email" });
     }
 
-    // Generamos un token aleatorio (puedes usar uuid también)
     const resetToken = crypto.randomBytes(32).toString("hex");
-    const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos
+    const expires = new Date(Date.now() + 15 * 60 * 1000);
 
     user.resetToken = resetToken;
     user.resetTokenExpires = expires;
     await user.save();
-
-    console.log(`🔐 Token de recuperación para ${email}: ${resetToken}`);
 
     await sendEmail({
       to: user.email,
@@ -344,19 +348,18 @@ const recoverPassword = async (req, res) => {
 
 const resetPassword = async (req, res) => {
   try {
-    const { token, newPassword } = req.body;
+    const body = matchedData(req);
 
     const user = await User.findOne({
-      resetToken: token,
-      resetTokenExpires: { $gt: new Date() }, // aún válido
+      resetToken: body.token,
+      resetTokenExpires: { $gt: new Date() },
     });
 
     if (!user) {
       return res.status(400).json({ message: "Token inválido o expirado" });
     }
 
-    // Cambiar la contraseña y limpiar el token
-    user.password = newPassword;
+    user.password = body.newPassword;
     user.resetToken = null;
     user.resetTokenExpires = null;
     await user.save();
@@ -369,14 +372,13 @@ const resetPassword = async (req, res) => {
 
 const changePassword = async (req, res) => {
   try {
-    const { currentPassword, newPassword } = req.body;
-
+    const body = matchedData(req);
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    const isMatch = await bcrypt.compare(body.currentPassword, user.password);
     if (!isMatch) {
       return res
         .status(401)
@@ -384,7 +386,7 @@ const changePassword = async (req, res) => {
     }
 
     const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(newPassword, salt);
+    user.password = await bcrypt.hash(body.newPassword, salt);
     await user.save();
 
     res.json({ message: "✅ Contraseña actualizada correctamente" });
@@ -395,26 +397,23 @@ const changePassword = async (req, res) => {
 
 const inviteUser = async (req, res) => {
   try {
-    const { email } = req.body;
+    const body = matchedData(req);
 
-    // Verificar que no exista ese email ya registrado
-    const existing = await User.findOne({ email });
+    const existing = await User.findOne({ email: body.email });
     if (existing) {
       return res.status(409).json({ message: "Ese correo ya está registrado" });
     }
 
     const inviter = await User.findById(req.user.id);
-
     if (!inviter || inviter.status !== "verified") {
       return res.status(403).json({ message: "No autorizado para invitar" });
     }
 
     const verificationCode = generateCode();
-
     const tempPassword = crypto.randomBytes(8).toString("hex");
 
     const invitedUser = new User({
-      email,
+      email: body.email,
       password: tempPassword,
       role: "guest",
       status: "pending",
@@ -425,28 +424,22 @@ const inviteUser = async (req, res) => {
     await invitedUser.save();
 
     await sendEmail({
-      to: email,
+      to: body.email,
       subject: "Invitación para unirse a la compañía",
       text: `
-    ¡Hola!
-    
-    Has sido invitado a unirte a la compañía de ${inviter.email} como usuario guest.
-    
-    Aquí tienes tus credenciales temporales para acceder:
-    
-    📧 Email: ${email}
-    🔐 Contraseña temporal: ${tempPassword}
-    ✅ Código de verificación: ${verificationCode}
-    
-    👉 Por favor, accede a la plataforma, inicia sesión y valida tu cuenta con el código anterior.
-    
-    ¡Bienvenido!
+Has sido invitado a unirte a la compañía de ${inviter.email} como usuario guest.
+
+📧 Email: ${body.email}
+🔐 Contraseña temporal: ${tempPassword}
+✅ Código de verificación: ${verificationCode}
+
+¡Bienvenido!
       `,
       from: process.env.EMAIL,
     });
 
     res.status(201).json({
-      message: `Invitación enviada a ${email}`,
+      message: `Invitación enviada a ${body.email}`,
     });
   } catch (error) {
     handleHttpError(res, error, "Error al invitar usuario");

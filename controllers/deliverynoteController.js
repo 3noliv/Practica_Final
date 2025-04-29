@@ -1,7 +1,6 @@
 const { matchedData } = require("express-validator");
 const { handleHttpError } = require("../utils/handleError");
 const { uploadToPinata } = require("../utils/handleUploadIPFS");
-const mongoose = require("mongoose");
 const DeliveryNote = require("../models/DeliveryNote");
 const PDFDocument = require("pdfkit");
 
@@ -28,7 +27,7 @@ const getDeliveryNotes = async (req, res) => {
 
     const query = {
       $or: [
-        { createdBy: user._id }, // SIN mongoose.ObjectId (ya es un ObjectId en test)
+        { createdBy: user._id },
         { createdBy: { $in: companyUsers } },
       ],
     };
