@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const { app, server } = require("../app");
 const User = require("../models/User");
 const Client = require("../models/Client");
+const { tokenSign } = require("../utils/handleJwt");
 
 describe("Client API - CRUD Completo", () => {
   let token = "";
@@ -12,14 +13,12 @@ describe("Client API - CRUD Completo", () => {
     await mongoose.connection.dropDatabase();
 
     // Paso 1: Registrar usuario
-    const res = await request(app)
+    await request(app)
       .post("/api/user/register")
       .send({ email: "client@test.com", password: "Password123" });
 
-    token = res.body.token;
-
-    // Paso 2: Verificar usuario manualmente
-    await User.findOneAndUpdate(
+    // Paso 2: Verificar y recuperar el usuario actualizado
+    const user = await User.findOneAndUpdate(
       { email: "client@test.com" },
       {
         status: "verified",
@@ -28,8 +27,17 @@ describe("Client API - CRUD Completo", () => {
           cif: "B99999999",
           address: "Calle Test",
         },
-      }
-    );
+      },
+      { new: true }
+    ).lean();
+
+    // Paso 3: Firmar el token correctamente con el campo `id`
+    const { tokenSign } = require("../utils/handleJwt");
+    token = tokenSign({
+      _id: user._id,
+      role: user.role,
+      email: user.email,
+    });
   });
 
   afterAll(async () => {
@@ -49,6 +57,7 @@ describe("Client API - CRUD Completo", () => {
         contactEmail: "cliente@email.com",
         contactPhone: "600123456",
       });
+
     expect(res.statusCode).toBe(201);
     expect(res.body.client.name).toBe("Cliente Prueba");
     clientId = res.body.client._id;
@@ -66,6 +75,7 @@ describe("Client API - CRUD Completo", () => {
         contactEmail: "nuevo@email.com",
         contactPhone: "600654321",
       });
+
     expect(res.statusCode).toBe(200);
     expect(res.body.client.name).toBe("Cliente Editado");
   });
@@ -75,6 +85,7 @@ describe("Client API - CRUD Completo", () => {
     const res = await request(app)
       .get(`/api/client/${clientId}`)
       .set("Authorization", `Bearer ${token}`);
+
     expect(res.statusCode).toBe(200);
     expect(res.body.client.name).toBe("Cliente Editado");
   });
@@ -84,6 +95,7 @@ describe("Client API - CRUD Completo", () => {
     const res = await request(app)
       .get("/api/client")
       .set("Authorization", `Bearer ${token}`);
+
     expect(res.statusCode).toBe(200);
     expect(res.body.clients.length).toBeGreaterThan(0);
   });
@@ -93,6 +105,7 @@ describe("Client API - CRUD Completo", () => {
     const res = await request(app)
       .delete(`/api/client/${clientId}`)
       .set("Authorization", `Bearer ${token}`);
+
     expect(res.statusCode).toBe(200);
     expect(res.body.message).toContain("archivado");
   });
@@ -102,6 +115,7 @@ describe("Client API - CRUD Completo", () => {
     const res = await request(app)
       .get("/api/client/archived")
       .set("Authorization", `Bearer ${token}`);
+
     expect(res.statusCode).toBe(200);
     expect(res.body.archived.length).toBeGreaterThan(0);
   });
@@ -111,6 +125,7 @@ describe("Client API - CRUD Completo", () => {
     const res = await request(app)
       .put(`/api/client/restore/${clientId}`)
       .set("Authorization", `Bearer ${token}`);
+
     expect(res.statusCode).toBe(200);
     expect(res.body.message).toContain("restaurado");
   });
@@ -120,6 +135,7 @@ describe("Client API - CRUD Completo", () => {
     const res = await request(app)
       .delete(`/api/client/${clientId}?soft=false`)
       .set("Authorization", `Bearer ${token}`);
+
     expect(res.statusCode).toBe(200);
     expect(res.body.message).toContain("eliminado");
   });

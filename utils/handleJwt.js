@@ -3,14 +3,14 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 /**
  * Firma un JWT para el usuario.
- * @param {*} user
- * @returns token
+ * Incluye `id` en lugar de `_id` para compatibilidad con el middleware.
  */
 const tokenSign = (user) => {
   return jwt.sign(
     {
-      _id: user._id,
+      id: user._id,
       role: user.role,
+      email: user.email, // opcional pero útil
     },
     JWT_SECRET,
     {
@@ -21,8 +21,6 @@ const tokenSign = (user) => {
 
 /**
  * Verifica y decodifica un token JWT.
- * @param {*} tokenJwt
- * @returns objeto con los datos del token o null si falla
  */
 const verifyToken = (tokenJwt) => {
   try {

@@ -14,6 +14,7 @@ const authMiddleware = async (req, res, next) => {
 
     const userId = decoded.id || decoded._id;
 
+    // ✅ Versión definitiva: buscar aunque esté soft-deleted
     const user = await User.findOneWithDeleted({ _id: userId });
 
     if (!user) {
