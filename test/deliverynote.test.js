@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const { app, server } = require("../app");
 const User = require("../models/User");
+const { tokenSign } = require("../utils/handleJwt");
 
 describe("DeliveryNote API - Flujo completo", () => {
   let token = "";
@@ -11,18 +12,15 @@ describe("DeliveryNote API - Flujo completo", () => {
   let clientId = "";
   let projectId = "";
 
+  // Paso 1: Preparar usuario, token, cliente y proyecto
   beforeAll(async () => {
     await mongoose.connection.dropDatabase();
 
-    // Registro
-    const res = await request(app)
+    await request(app)
       .post("/api/user/register")
       .send({ email: "note@test.com", password: "Password123" });
 
-    token = res.body.token;
-
-    // Verificación manual y datos de empresa
-    await User.findOneAndUpdate(
+    const user = await User.findOneAndUpdate(
       { email: "note@test.com" },
       {
         status: "verified",
@@ -31,17 +29,16 @@ describe("DeliveryNote API - Flujo completo", () => {
           cif: "B44444444",
           address: "Calle 44",
         },
-      }
-    );
+      },
+      { new: true }
+    ).lean();
 
-    // Nuevo login para token actualizado
-    const loginRes = await request(app)
-      .post("/api/user/login")
-      .send({ email: "note@test.com", password: "Password123" });
+    token = await tokenSign({
+      _id: user._id,
+      email: user.email,
+      role: user.role,
+    });
 
-    token = loginRes.body.token;
-
-    // Crear cliente
     const clientRes = await request(app)
       .post("/api/client")
       .set("Authorization", `Bearer ${token}`)
@@ -55,7 +52,6 @@ describe("DeliveryNote API - Flujo completo", () => {
 
     clientId = clientRes.body.client._id;
 
-    // Crear proyecto
     const projectRes = await request(app)
       .post("/api/project")
       .set("Authorization", `Bearer ${token}`)
@@ -70,11 +66,13 @@ describe("DeliveryNote API - Flujo completo", () => {
     projectId = projectRes.body.project._id;
   });
 
+  // Paso 2: Cerrar conexión
   afterAll(async () => {
     await mongoose.connection.close();
     if (server && server.close) server.close();
   });
 
+  // Paso 3: Crear albarán
   it("should create a delivery note", async () => {
     const res = await request(app)
       .post("/api/deliverynote")
@@ -93,21 +91,21 @@ describe("DeliveryNote API - Flujo completo", () => {
         ],
       });
 
-    console.log("📝 Creado:", res.body);
     expect(res.statusCode).toBe(200);
     noteId = res.body._id;
   });
 
+  // Paso 4: Listar albaranes
   it("should list all delivery notes", async () => {
     const res = await request(app)
       .get("/api/deliverynote")
       .set("Authorization", `Bearer ${token}`);
 
-    console.log("📦 Todos:", res.body);
     expect(res.statusCode).toBe(200);
     expect(res.body.length).toBeGreaterThan(0);
   });
 
+  // Paso 5: Obtener albarán por ID
   it("should get a delivery note by ID", async () => {
     const res = await request(app)
       .get(`/api/deliverynote/${noteId}`)
@@ -117,6 +115,7 @@ describe("DeliveryNote API - Flujo completo", () => {
     expect(res.body._id).toBe(noteId);
   });
 
+  // Paso 6: Generar PDF del albarán
   it("should generate a PDF for the delivery note", async () => {
     const res = await request(app)
       .get(`/api/deliverynote/pdf/${noteId}`)
@@ -126,6 +125,7 @@ describe("DeliveryNote API - Flujo completo", () => {
     expect(res.headers["content-type"]).toBe("application/pdf");
   });
 
+  // Paso 7: Firmar el albarán
   it("should sign the delivery note", async () => {
     const image = fs.readFileSync(path.join(__dirname, "firma.png"));
 
@@ -139,6 +139,7 @@ describe("DeliveryNote API - Flujo completo", () => {
     expect(res.body.signatureUrl).toContain("ipfs");
   });
 
+  // Paso 8: No permitir borrar un albarán firmado
   it("should NOT delete the signed delivery note", async () => {
     const res = await request(app)
       .delete(`/api/deliverynote/${noteId}`)
