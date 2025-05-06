@@ -2,23 +2,22 @@ const request = require("supertest");
 const mongoose = require("mongoose");
 const { app, server } = require("../app");
 const User = require("../models/User");
+const { tokenSign } = require("../utils/handleJwt");
 
 describe("Project API - CRUD Completo", () => {
   let token = "";
   let projectId = "";
   let client = "";
 
+  // Paso 1: Preparar entorno, usuario, token y cliente
   beforeAll(async () => {
     await mongoose.connection.dropDatabase();
 
-    // Registrar usuario y verificarlo
-    const res = await request(app)
+    await request(app)
       .post("/api/user/register")
       .send({ email: "project@test.com", password: "Password123" });
 
-    token = res.body.token;
-
-    await User.findOneAndUpdate(
+    const user = await User.findOneAndUpdate(
       { email: "project@test.com" },
       {
         status: "verified",
@@ -27,10 +26,16 @@ describe("Project API - CRUD Completo", () => {
           cif: "B88888888",
           address: "Calle Empresa",
         },
-      }
-    );
+      },
+      { new: true }
+    ).lean();
 
-    // Crear cliente
+    token = await tokenSign({
+      _id: user._id,
+      email: user.email,
+      role: user.role,
+    });
+
     const clientRes = await request(app)
       .post("/api/client")
       .set("Authorization", `Bearer ${token}`)
@@ -45,12 +50,13 @@ describe("Project API - CRUD Completo", () => {
     client = clientRes.body.client._id;
   });
 
+  // Paso 2: Cerrar conexión tras los tests
   afterAll(async () => {
     await mongoose.connection.close();
     if (server && server.close) server.close();
   });
 
-  // Crear proyecto
+  // Paso 3: Crear proyecto
   it("should create a project", async () => {
     const res = await request(app)
       .post("/api/project")
@@ -68,7 +74,7 @@ describe("Project API - CRUD Completo", () => {
     projectId = res.body.project._id;
   });
 
-  // Editar proyecto
+  // Paso 4: Editar proyecto
   it("should update the project", async () => {
     const res = await request(app)
       .put(`/api/project/${projectId}`)
@@ -83,7 +89,7 @@ describe("Project API - CRUD Completo", () => {
     expect(res.body.project.name).toBe("Proyecto Actualizado");
   });
 
-  // Obtener proyecto por ID
+  // Paso 5: Obtener proyecto por ID
   it("should get the project by ID", async () => {
     const res = await request(app)
       .get(`/api/project/${projectId}`)
@@ -93,7 +99,7 @@ describe("Project API - CRUD Completo", () => {
     expect(res.body.project._id).toBe(projectId);
   });
 
-  // Listar todos los proyectos
+  // Paso 6: Listar todos los proyectos
   it("should list all projects for the user or company", async () => {
     const res = await request(app)
       .get("/api/project")
@@ -103,34 +109,29 @@ describe("Project API - CRUD Completo", () => {
     expect(res.body.projects.length).toBeGreaterThan(0);
   });
 
-  // Archivar proyecto (soft delete)
+  // Paso 7: Archivar proyecto (soft delete)
   it("should archive the project", async () => {
     const res = await request(app)
       .delete(`/api/project/${projectId}`)
       .set("Authorization", `Bearer ${token}`);
 
-    console.log("🧪 Archivo result:", res.body);
-
     expect(res.statusCode).toBe(200);
     expect(res.body.message).toContain("archivado");
   });
 
-  // Listar archivados
+  // Paso 8: Listar proyectos archivados
   it("should list archived projects", async () => {
-    // Esperar un poco para que Mongo registre el soft delete
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     const res = await request(app)
       .get("/api/project/archived")
       .set("Authorization", `Bearer ${token}`);
 
-    console.log("💥 RES BODY:", res.body);
-
     expect(res.statusCode).toBe(200);
     expect(res.body.archived.length).toBeGreaterThan(0);
   });
 
-  // Restaurar proyecto
+  // Paso 9: Restaurar proyecto
   it("should restore the archived project", async () => {
     const res = await request(app)
       .put(`/api/project/restore/${projectId}`)
@@ -140,7 +141,7 @@ describe("Project API - CRUD Completo", () => {
     expect(res.body.message).toContain("restaurado");
   });
 
-  // Eliminar proyecto (hard delete)
+  // Paso 10: Eliminar proyecto definitivamente (hard delete)
   it("should hard delete the project", async () => {
     const res = await request(app)
       .delete(`/api/project/${projectId}?soft=false`)
