@@ -37,6 +37,15 @@ const createTransporter = async () => {
 };
 
 const sendEmail = async (emailOptions) => {
+  // Desactiva envío real en entorno de test
+  if (process.env.NODE_ENV === "test") {
+    console.log("🧪 Email simulado en entorno de test:", emailOptions);
+    return {
+      accepted: [emailOptions.to],
+      message: "Mock email sent (test mode)",
+    };
+  }
+
   try {
     const emailTransporter = await createTransporter();
     const info = await emailTransporter.sendMail(emailOptions);

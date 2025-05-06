@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const { app, server } = require("../app");
 const User = require("../models/User");
+const { tokenSign } = require("../utils/handleJwt");
 
 describe("User API - flujo completo", () => {
   let token = "";
@@ -20,18 +21,28 @@ describe("User API - flujo completo", () => {
     if (server && server.close) server.close();
   });
 
-  // 1. Registro
-  it("should register a user", async () => {
+  // 1. Registro y verificación manual
+  it("should register a user and verify", async () => {
     const res = await request(app)
       .post("/api/user/register")
       .send({ email: testEmail, password });
     expect(res.statusCode).toBe(201);
     expect(res.body.user.email).toBe(testEmail);
-    token = res.body.token;
-    userId = res.body.user._id;
 
-    // Forzar verificación
-    await User.findOneAndUpdate({ email: testEmail }, { status: "verified" });
+    // Verificar usuario y generar token con ID
+    const rawUser = await User.findOneAndUpdate(
+      { email: testEmail },
+      { status: "verified" },
+      { new: true }
+    ).lean();
+
+    delete rawUser.password;
+    userId = rawUser._id;
+    token = await tokenSign({
+      id: rawUser._id, // aseguramos que use `id` para el middleware
+      role: rawUser.role,
+      email: rawUser.email,
+    });
   });
 
   // 2. Login
@@ -73,7 +84,7 @@ describe("User API - flujo completo", () => {
 
   // 6. Subida de logo (simulado)
   it("should upload logo", async () => {
-    const buffer = fs.readFileSync(path.join(__dirname, "logo.png")); // asegúrate de tener logo.png en /tests
+    const buffer = fs.readFileSync(path.join(__dirname, "logo.png"));
 
     const res = await request(app)
       .patch("/api/user/logo")
@@ -114,29 +125,16 @@ describe("User API - flujo completo", () => {
 
   // 10. Restaurar usuario y loguearse de nuevo con la nueva contraseña
   it.skip("should restore user", async () => {
-    // Restaurar usando el endpoint real
     const restoreRes = await request(app)
       .put("/api/user/restore")
       .set("Authorization", `Bearer ${token}`);
 
-    // Si esto falla, te lo mostramos bien
-    if (restoreRes.statusCode !== 200) {
-      console.error("❌ Restore fallido:", restoreRes.body);
-    }
-
     expect(restoreRes.statusCode).toBe(200);
+    await new Promise((r) => setTimeout(r, 500));
 
-    // ⚠️ Esperar un momento puede ayudar si Mongo aún no ha propagado el cambio
-    await new Promise((r) => setTimeout(r, 500)); // espera 0.5s
-
-    // Hacer login de nuevo tras restaurar
     const loginRes = await request(app)
       .post("/api/user/login")
       .send({ email: testEmail, password: "Password456" });
-
-    if (loginRes.statusCode !== 200) {
-      console.error("❌ Login después de restaurar falló:", loginRes.body);
-    }
 
     expect(loginRes.statusCode).toBe(200);
     expect(loginRes.body.token).toBeDefined();
@@ -155,7 +153,6 @@ describe("User API - flujo completo", () => {
     expect(res.statusCode).toBe(201);
     const tempToken = res.body.token;
 
-    // Forzar verificación
     await User.findOneAndUpdate({ email: tempEmail }, { status: "verified" });
 
     const deleteRes = await request(app)
@@ -167,7 +164,6 @@ describe("User API - flujo completo", () => {
 
   // 12. Invitar guest
   it("should invite a guest user", async () => {
-    // crear admin para hacer la invitación
     const res1 = await request(app)
       .post("/api/user/register")
       .send({ email: "admin@admin.com", password: "Password123" });

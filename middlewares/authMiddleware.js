@@ -12,8 +12,9 @@ const authMiddleware = async (req, res, next) => {
     const tokenValue = token.replace("Bearer ", "");
     const decoded = jwt.verify(tokenValue, process.env.JWT_SECRET);
 
-    // Incluye usuarios soft-deleted
-    const user = await User.findOneWithDeleted({ _id: decoded.id });
+    const userId = decoded.id || decoded._id;
+
+    const user = await User.findOneWithDeleted({ _id: userId });
 
     if (!user) {
       return handleHttpError(

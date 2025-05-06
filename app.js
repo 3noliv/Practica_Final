@@ -14,13 +14,13 @@ setupSwagger(app);
 app.use(cors());
 app.use(express.json());
 
-morganBody(app, {
-  noColors: true,
-  skip: function (req, res) {
-    return res.statusCode < 400; // Solo errores
-  },
-  stream: loggerStream,
-});
+if (process.env.NODE_ENV !== "test") {
+  morganBody(app, {
+    noColors: true,
+    skip: (req, res) => res.statusCode < 400,
+    stream: loggerStream,
+  });
+}
 
 // Usar el index de rutas con prefijo /api
 app.use("/api", routes);
