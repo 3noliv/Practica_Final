@@ -10,17 +10,17 @@ const ProjectSchema = new mongoose.Schema(
     description: String,
     client: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Client", // asegúrate de que tu modelo de cliente se llame así
+      ref: "Client",
       required: true,
     },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // usuario que creó el proyecto
+      ref: "User",
       required: true,
     },
     companyId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // opcional, si quieres enlazarlo a la compañía directamente
+      type: String, // CIF o DNI de quien crea el proyecto (empresa o autónomo)
+      required: true,
     },
     startDate: Date,
     endDate: Date,

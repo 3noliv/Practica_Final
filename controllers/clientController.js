@@ -7,13 +7,26 @@ const createClient = async (req, res) => {
     const body = matchedData(req);
     const user = req.user;
 
+    // Verificar que el usuario tenga la cuenta verificada
     if (user.status !== "verified") {
       return handleHttpError(res, "Cuenta no verificada", 403);
     }
 
+    // Determinar el companyId a usar (empresa o autónomo)
+    const companyId = user.companyData?.cif || user.personalData?.dni;
+
+    if (!companyId) {
+      return handleHttpError(
+        res,
+        "No se puede determinar el ID de compañía del usuario",
+        400
+      );
+    }
+
+    // Comprobar si ya existe un cliente con ese CIF para el usuario o su empresa
     const existing = await Client.findOne({
       cif: body.cif,
-      $or: [{ createdBy: user._id }, { companyId: user.companyData?.cif }],
+      $or: [{ createdBy: user._id }, { companyId }],
     });
 
     if (existing) {
@@ -24,10 +37,11 @@ const createClient = async (req, res) => {
       );
     }
 
+    // Crear nuevo cliente
     const newClient = new Client({
       ...body,
       createdBy: user._id,
-      companyId: user.companyData?.cif,
+      companyId,
     });
 
     await newClient.save();
@@ -37,7 +51,8 @@ const createClient = async (req, res) => {
       client: newClient,
     });
   } catch (error) {
-    handleHttpError(res, error, "Error al crear cliente");
+    console.warn("❌ Error capturado:", error);
+    handleHttpError(res, "ERROR_CREATE_CLIENT");
   }
 };
 

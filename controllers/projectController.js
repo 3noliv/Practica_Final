@@ -8,14 +8,21 @@ const { handleHttpError } = require("../utils/handleError");
 const createProject = async (req, res) => {
   try {
     const body = matchedData(req);
+    const user = req.user;
 
-    const owner = req.user.id;
-    const companyId = req.user.companyId || null;
+    const companyId = user.companyData?.cif || user.personalData?.dni;
+
+    if (!companyId) {
+      return res.status(400).json({
+        message:
+          "No se puede determinar el ID de la empresa o usuario autónomo",
+      });
+    }
 
     const exists = await Project.findOne({
       name: body.name,
       client: body.client,
-      owner,
+      owner: user._id,
     });
 
     if (exists) {
@@ -26,16 +33,16 @@ const createProject = async (req, res) => {
 
     const newProject = await Project.create({
       ...body,
-      owner,
+      owner: user._id,
       companyId,
     });
 
     res.status(201).json({ project: newProject });
   } catch (error) {
+    console.warn("❌ ERROR_CREATE_PROJECT:", error);
     handleHttpError(res, "ERROR_CREATE_PROJECT");
   }
 };
-
 const updateProject = async (req, res) => {
   try {
     const projectId = req.params.id;

@@ -188,6 +188,15 @@ const updateOnboarding = async (req, res) => {
 
     if (typeof body.autonomo === "boolean") {
       user.autonomo = body.autonomo;
+
+      // Si es autónomo, copiamos automáticamente a companyData
+      if (body.autonomo === true) {
+        user.companyData = {
+          name: `${body.name} ${body.surname}`,
+          cif: body.nif,
+          address: "Dirección no especificada",
+        };
+      }
     }
 
     await user.save();
